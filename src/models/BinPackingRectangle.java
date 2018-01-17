@@ -133,6 +133,10 @@ public class BinPackingRectangle  implements Comparable<BinPackingRectangle>{
 		return this.isHorizontal;
 	}
 	
+	public boolean isVertical(){
+		return !this.isHorizontal;
+	}
+	
 	public void setBox(Box b){
 		this.box = b;
 	}

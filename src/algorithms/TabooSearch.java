@@ -9,7 +9,7 @@ import interfaces.Neighborhood;
 import models.PermutationBinPackingSolutionFeature;
 
 public class TabooSearch {
-	public final long MAX_RUN_TIME = 20000; // in ms
+	public final long MAX_RUN_TIME = 10000; // in ms
 	public final long MAX_TIME_WITHOUT_IMPROVEMENT = 2000;
 	public final int K = 2;
 	public static long neighborhoodTime = 0;

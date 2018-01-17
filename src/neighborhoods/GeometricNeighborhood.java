@@ -18,12 +18,23 @@ public class GeometricNeighborhood implements Neighborhood {
 	
 	private int allowedOverlapping = 0;
 	
+	/**
+	 * Defines the geometric neighborhood function: 
+	 * Move rect from box A to box B or swap two rectangles in different boxes
+	 * @author Nicolas
+	 *
+	 */
 	private class Move implements Comparable<Move>{
 		public final boolean isSwap;
 		public final Box destinationBox;
 		public final BinPackingRectangle r1, r2;
 		double costDelta;
 		
+		/**  Constructor for a swap
+		 * 
+		 * @param r1 First rectangle in swap
+		 * @param r2 Second rectangle in swap
+		 */
 		public Move(BinPackingRectangle r1, BinPackingRectangle r2){
 			this.r1 = r1;
 			this.r2 = r2;
@@ -56,6 +67,10 @@ public class GeometricNeighborhood implements Neighborhood {
 			}
 		}
 		
+		/** Constructor for a move
+		 * @param r Rectangle to be moved
+		 * @param b Box into which rectangle r shall be moved
+		 */
 		public Move(BinPackingRectangle r, Box b){
 			isSwap = false;
 			r1 = r;

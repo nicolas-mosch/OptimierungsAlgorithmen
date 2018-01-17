@@ -24,7 +24,7 @@ import neighborhoods.PermutationNeighborhood;
 public class Tests {
 	
 	private static final int INSTANCE_COUNT = 1;
-	private static final int RECTANGLE_COUNT = 20;
+	private static final int RECTANGLE_COUNT = 500;
 	private static final int MIN_SIDE_LENGTH = 1;
 	private static final int MAX_SIDE_LENGTH = 4;
 	private static final int BOX_LENGTH = 5;
@@ -72,7 +72,7 @@ public class Tests {
 		}
 	}
 	
-	@Ignore
+	@Test
 	public void testSimulatedAnnealingWithGeometricNeighborhood() {
 		SimulatedAnnealing solver = new SimulatedAnnealing();
 		GeometricNeighborhood permutationNeighborhood = new GeometricNeighborhood();
