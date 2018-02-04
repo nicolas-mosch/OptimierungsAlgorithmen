@@ -83,15 +83,17 @@ public class PermutationNeighborhood implements Neighborhood {
 					freeCells[i] = value - width;
 					return true;
 				} else {
-					for(int j = 0; j < i ; j++) {
+					for(int j = 0; j <= i ; j++) {
 						if(r[j] != 0) {
-							k = i - height;
+							k = j - height;
 							if(k > 0) {
 							freeCells[k] = freeCells[k] + width;
 							}
 
 							freeCells[j] = 0;
 						}
+						k = i - height;
+						freeCells[k] = freeCells[k] + width;
 						freeCells[i] = value - width;
 					}
 					return true;
