@@ -23,6 +23,7 @@ public class PermutationNeighborhood implements Neighborhood {
 	private final int boxLength;
 
 	int[] freeCells;
+
 	public PermutationNeighborhood(int boxLength, int allowedOverlapping) {
 		this.boxLength = boxLength;
 		this.allowedOverlapping = allowedOverlapping;
@@ -37,39 +38,43 @@ public class PermutationNeighborhood implements Neighborhood {
 
 	private ArrayList<FeasibleSolution> getPossibleNeighbors(FeasibleSolution solution) {
 		// Melissa
-		ArrayList<FeasibleSolution> possiblePerm= new ArrayList<>();
+		ArrayList<FeasibleSolution> possiblePerm = new ArrayList<>();
 		ArrayList<Box> boxes = ((PermutationBinPackingSolution) solution).boxes;
 		ArrayList<BinPackingRectangle> rectangles = ((PermutationBinPackingSolution) solution).rectangles;
 		// create permutation
 		int maxSize = boxes.size();
 		int boxCount = 0;
 		initfreeCells();
+
 		// for one permutation
 		for (BinPackingRectangle rectangle : rectangles) {
-			if(!setFreeCells(rectangle.getHeight(), rectangle.getWidth())) {
+			if (!setFreeCells(rectangle.getHeight(), rectangle.getWidth())) {
 				boxCount++;
 				initfreeCells();
-				setFreeCells(rectangle.getHeight(), rectangle.getWidth());
-				
+				setFreeCells(rectangle.getShortSide(), rectangle.getLongSide());
+
 			}
 		}
-		if(boxCount <= maxSize) {
-			//temp
+		if (boxCount <= maxSize) {
+			// temp
 			possiblePerm.add(new PermutationBinPackingSolution(rectangles, boxes));
 		}
 		return possiblePerm;
 	}
 
 	private void initfreeCells() {
-		for (int i = 0; i < this.boxLength - 1; i++) {	
-			freeCells[i] = 0; 
+		for (int i = 0; i < this.boxLength - 1; i++) {
+			freeCells[i] = 0;
 		}
-		freeCells[this.boxLength -1] = this.boxLength;
+		freeCells[this.boxLength - 1] = this.boxLength;
 	}
 
 	public boolean setFreeCells(int height, int width) {
 		boolean foundSome = false;
 		int[] r = new int[this.boxLength];
+		for (int i = 0; i < this.boxLength; i++) {
+			r[i] = 0;
+		}
 		// initialize array
 		int k = 0;
 		int value;
@@ -77,40 +82,30 @@ public class PermutationNeighborhood implements Neighborhood {
 			value = freeCells[i];
 
 			if (width > 0 && value >= width) {
-				if (!foundSome) {
-					k = i - height;
-					freeCells[k] = freeCells[k] + width;
-					freeCells[i] = value - width;
-					return true;
-				} else {
-					for(int j = 0; j <= i ; j++) {
-						if(r[j] != 0) {
+				if (foundSome) {
+					for (int j = 0; j < i; j++) {
+						if (r[j] != 0) {
 							k = j - height;
-							if(k > 0) {
-							freeCells[k] = freeCells[k] + width;
+							if (k > 0) {
+								freeCells[k] = freeCells[k] + width;
 							}
-
 							freeCells[j] = 0;
 						}
-						k = i - height;
-						freeCells[k] = freeCells[k] + width;
-						freeCells[i] = value - width;
 					}
-					return true;
-
 				}
+				k = i - height;
+				if (k > 0) {
+					freeCells[k] = freeCells[k] + width;
+				}
+				freeCells[i] = value - width;
+				return true;
 			} else if (value < width && value != 0) {
 				foundSome = true;
 				r[i] = value; // ???store indices to remove
 				width = width - value;
-
 			}
 		}
 		return false;
-	}
-
-	// Melissa
-	private void setFreeCells2() {
 
 	}
 
