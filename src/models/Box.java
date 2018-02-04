@@ -16,14 +16,15 @@ public class Box implements Comparable<Box>{
 	private int length;
 	private ArrayList<BinPackingRectangle> rectangles;
 	private final int id;
-	private ArrayList<BinPackingRectangle> storedRectangles;
+	private ArrayList<BinPackingRectangle> storedRectangles; 
 	/**
 	 * @param length
 	 */
 	public Box(int id, int length) {
 		this.length = length;
 		rectangles = new ArrayList<BinPackingRectangle>();
-		this.id = id;
+		this.id = id; 
+		
 	}
 
 	public int getLength() {
@@ -36,8 +37,8 @@ public class Box implements Comparable<Box>{
 			freeSurface -= r.getSurface();
 		}
 		return freeSurface;
-	}
-	
+	} 
+ 
 	
 	public int getOccupiedSurface() {
 		return length*length - getFreeSurface();
@@ -191,7 +192,7 @@ public class Box implements Comparable<Box>{
 		}
 		System.out.println("Successfully inserted |" + n + "| into box " + id + ": 1");
 		rectangles.add(n);
-		n.setBox(this);
+		n.setBox(this); 
 		return true;
 	}
 	
@@ -201,7 +202,7 @@ public class Box implements Comparable<Box>{
 	 */
 	public void insertRectangleAtPosition(BinPackingRectangle n){
 		rectangles.add(n);
-		n.setBox(this);
+		n.setBox(this); 
 	}
 	
 	/** Removes the given rectangle from the box if contained
@@ -209,7 +210,7 @@ public class Box implements Comparable<Box>{
 	 * @return
 	 */
 	public boolean removeRectangle(BinPackingRectangle r){
-		if(rectangles.remove(r)){
+		if(rectangles.remove(r)){ 
 			return true;
 		}
 		return false;

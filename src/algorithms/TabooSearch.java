@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import interfaces.FeasibleSolution;
 import interfaces.Feature;
 import interfaces.Neighborhood;
-import models.PermutationBinPackingSolutionFeature;
 
 public class TabooSearch {
 	public final long MAX_RUN_TIME = 20000; // in ms

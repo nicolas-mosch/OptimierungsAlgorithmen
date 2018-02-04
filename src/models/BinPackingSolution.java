@@ -54,7 +54,7 @@ public abstract class BinPackingSolution implements FeasibleSolution {
 			c -= boxCost(b); 
 		}
 		return c;
-	}
+	} 
 	
 	@Override
 	public String toString(){
