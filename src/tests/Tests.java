@@ -239,4 +239,46 @@ public class Tests {
 		}
 		
 	}
+
+
+@Test
+public void vectorTest() {
+	BinPackingRectangle[] rects = new BinPackingRectangle[5];
+	rects[0] = (new BinPackingRectangle(1, 1, 1));
+	rects[1] = (new BinPackingRectangle(2, 1, 3));
+	rects[2] = (new BinPackingRectangle(3, 1, 3));
+	rects[3] = (new BinPackingRectangle(4, 2, 3));
+	rects[4] = (new BinPackingRectangle(5, 1, 3));
+	
+	int boxCount = 0;
+	int [] v = new int [BOX_LENGTH];
+	boolean b = false;
+	
+	FeasibleSolution s = new PermutationBinPackingSolution(new ArrayList<BinPackingRectangle>(Arrays.asList(rects)), BOX_LENGTH, 0);
+	PermutationNeighborhood n = new PermutationNeighborhood(BOX_LENGTH, 0);
+	n.initfreeCells();
+	v = n.freeCells;
+	for(int i=0; i< BOX_LENGTH; i++) {
+		System.out.println("vector" + i + ": " + v[i]);
+		}
+	
+	ArrayList<BinPackingRectangle> rectangles = ((PermutationBinPackingSolution) s).rectangles;
+	for (BinPackingRectangle rectangle : rectangles) {
+		b = n.setFreeCells(rectangle.getShortSide(), rectangle.getLongSide());
+		if (b) {
+			v = n.freeCells;
+			System.out.println();
+			for(int i=0; i< BOX_LENGTH; i++) {
+			System.out.println("id: " + rectangle.getId() + " vector " + i + ": " + v[i]);
+			}
+		}
+		else if (!b) {
+			boxCount++;
+			n.initfreeCells();
+			n.setFreeCells(rectangle.getShortSide(), rectangle.getLongSide());
+
+		}
+	}
+	System.out.println("BoxCount" + boxCount);
+}
 }
