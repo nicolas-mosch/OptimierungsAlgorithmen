@@ -243,6 +243,7 @@ public class Tests {
 
 @Test
 public void vectorTest() {
+
 	BinPackingRectangle[] rects = new BinPackingRectangle[5];
 	rects[0] = (new BinPackingRectangle(1, 1, 1));
 	rects[1] = (new BinPackingRectangle(2, 1, 3));
