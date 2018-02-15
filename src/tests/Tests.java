@@ -121,7 +121,7 @@ public class Tests {
 	}
 	
 	
-	@Test
+	@Ignore
 	public void testLocalSearchWithPermutationNeighborhood() {
 		LocalSearch solver = new LocalSearch();
 		PermutationNeighborhood permutationNeighborhood = new PermutationNeighborhood(BOX_LENGTH, 0);
@@ -145,7 +145,7 @@ public class Tests {
 		}
 	}
 	
-	@Test
+	@Ignore
 	public void testSimulatedAnnealingWithPermutationNeighborhood() {
 		SimulatedAnnealing solver = new SimulatedAnnealing();
 		PermutationNeighborhood permutationNeighborhood = new PermutationNeighborhood(BOX_LENGTH, 0);
@@ -169,7 +169,7 @@ public class Tests {
 		}
 	}
 	
-	@Test
+	@Ignore
 	public void testTabooSearchWithPermutationNeighborhood() {
 		TabooSearch solver = new TabooSearch();
 		PermutationNeighborhood permutationNeighborhood = new PermutationNeighborhood(BOX_LENGTH, 0);

@@ -25,6 +25,7 @@ public class PermutationNeighborhood implements Neighborhood {
 	private final int boxLength;
 
 	public int[] freeCells;
+
 	
 	public PermutationNeighborhood(int boxLength, int allowedOverlapping) {
 		this.boxLength = boxLength;
@@ -35,10 +36,10 @@ public class PermutationNeighborhood implements Neighborhood {
 	@Override
 	public FeasibleSolution getBestNeighbor(FeasibleSolution solution, Set<Feature> tabooList) {
 		return null;
-		
 	}
 
-	@Override
+
+	@Oeerride
 	public FeasibleSolution getAugmentingNeighbor(FeasibleSolution solution) {
 		// TODO Auto-generated method stub
 		return null;
@@ -48,5 +49,6 @@ public class PermutationNeighborhood implements Neighborhood {
 	public FeasibleSolution getRandomNeighbor(FeasibleSolution solution) {
 		// TODO Auto-generated method stub
 		return null;
-	}
+	
+
 }
