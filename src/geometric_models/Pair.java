@@ -1,4 +1,4 @@
-package models;
+package geometric_models;
 
 public class Pair<A, B> {
 	public A a;

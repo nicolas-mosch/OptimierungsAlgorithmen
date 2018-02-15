@@ -1,8 +1,14 @@
 package gui;
  
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 
+import binpacking_models.BinPackingSolution;
+import binpacking_models.GeometricBinPackingSolution;
 import generators.RectangleGenerator;
+import geometric_models.BinPackingRectangle;
+import geometric_models.Box;
 import interactive_algorithms.InteractiveBinPackingLocalSearch;
 import interfaces.InteractiveBinPackingSolver;
 import javafx.application.Platform;
@@ -18,9 +24,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
-import models.BinPackingSolution;
-import models.Box;
-import models.BinPackingRectangle;
 import neighborhoods.GeometricNeighborhood;
 import neighborhoods.PermutationNeighborhood;
 
@@ -36,7 +39,9 @@ public class MainWindowController{
 	private int iteration;
 	
 	private BinPackingSolution initialSolution;
+	private BinPackingRectangle[] rectangles;
 	private NewInstanceParameters instanceParameters;
+	
 	
 	public void openNewInstancePane(){
 		
@@ -86,28 +91,26 @@ public class MainWindowController{
         	// Generate new instance
         	
         	RectangleGenerator generator = new RectangleGenerator();
-        	BinPackingRectangle[] rectangles = generator.generateRandomly(
+        	rectangles = generator.generateRandomly(
         		parameters.rectangleCount,
         		parameters.minSideLength,
         		parameters.maxSideLength
         	);
         	
-        	
-        	/*
-        	initialSolution = new BinPackingSolution(
-        		new ArrayList<BinPackingRectangle>(Arrays.asList(rectangles)),
-        		parameters.boxLength,
-        		0
-        	);
-        	*/
         });
 	}
 	
 	public void initializeStandardGeometricLocalSearch(){
+		initialSolution = new GeometricBinPackingSolution(
+    		new ArrayList<BinPackingRectangle>(Arrays.asList(rectangles)),
+    		instanceParameters.boxLength,
+    		0
+    	);
 		solver = new InteractiveBinPackingLocalSearch(
     			initialSolution,
-    		new GeometricNeighborhood()
+    		new GeometricNeighborhood(initialSolution)
     	);
+    	
 		iteration = 0;
     	drawSolution(initialSolution);
 	}

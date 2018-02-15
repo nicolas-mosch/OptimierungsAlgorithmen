@@ -1,4 +1,4 @@
-package models;
+package geometric_models;
 
 import java.util.HashSet;
 
@@ -133,7 +133,7 @@ public class BinPackingRectangle  implements Comparable<BinPackingRectangle>{
 		return this.isHorizontal;
 	}
 	
-	public void setBox(Box b){
+	void setBox(Box b){
 		this.box = b;
 	}
 	

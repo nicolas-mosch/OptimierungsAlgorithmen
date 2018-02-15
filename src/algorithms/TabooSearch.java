@@ -8,12 +8,15 @@ import interfaces.Feature;
 import interfaces.Neighborhood;
 
 public class TabooSearch {
-	public final long MAX_RUN_TIME = 20000; // in ms
+	public int iterationCount;
+	
+	public final long MAX_RUN_TIME = 10000; // in ms
 	public final long MAX_TIME_WITHOUT_IMPROVEMENT = 2000;
 	public final int K = 2;
 	public static long neighborhoodTime = 0;
 	
 	public FeasibleSolution solve(FeasibleSolution currentSolution, Neighborhood n){
+		iterationCount = 0;
 		
 		FeasibleSolution bestSolution = currentSolution;
 		
@@ -28,6 +31,7 @@ public class TabooSearch {
 		long lastImprovementFound = System.currentTimeMillis(); 
 		
 		while(System.currentTimeMillis() - startTime < MAX_RUN_TIME){
+			++iterationCount;
 			if(c > K && !tabooList.isEmpty()){
 				featureSet.removeAll(tabooList.pop());
 			}

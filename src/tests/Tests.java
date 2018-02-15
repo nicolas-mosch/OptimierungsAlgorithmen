@@ -11,20 +11,20 @@ import org.junit.Test;
 import algorithms.LocalSearch;
 import algorithms.SimulatedAnnealing;
 import algorithms.TabooSearch;
+import binpacking_models.BinPackingSolution;
+import binpacking_models.GeometricBinPackingSolution;
+import binpacking_models.PermutationBinPackingSolution;
 import generators.RectangleGenerator;
+import geometric_models.BinPackingRectangle;
 import interfaces.FeasibleSolution;
 import interfaces.Feature;
-import models.BinPackingSolution;
-import models.GeometricBinPackingSolution;
-import models.PermutationBinPackingSolution;
-import models.BinPackingRectangle;
 import neighborhoods.GeometricNeighborhood;
 import neighborhoods.PermutationNeighborhood;
 
 public class Tests {
 	
 	private static final int INSTANCE_COUNT = 1;
-	private static final int RECTANGLE_COUNT = 20;
+	private static final int RECTANGLE_COUNT = 1000;
 	private static final int MIN_SIDE_LENGTH = 1;
 	private static final int MAX_SIDE_LENGTH = 4;
 	private static final int BOX_LENGTH = 5;
@@ -56,10 +56,10 @@ public class Tests {
 		LocalSearch solver = new LocalSearch();
 		
 		BinPackingSolution initialSolution;
-		GeometricNeighborhood geometricNeighborhood = new GeometricNeighborhood();
 		
 		for(int i = 0; i < INSTANCE_COUNT; i++){
 			initialSolution = new GeometricBinPackingSolution(new ArrayList<BinPackingRectangle>(Arrays.asList(rectanglesGroups[i])), BOX_LENGTH, 0);
+			GeometricNeighborhood geometricNeighborhood = new GeometricNeighborhood(initialSolution);
 			int initialBoxCount = initialSolution.boxes.size();
 			long startTime = System.currentTimeMillis();
 			BinPackingSolution result = (BinPackingSolution) solver.solve(
@@ -68,26 +68,26 @@ public class Tests {
 				);
 			long stopTime = System.currentTimeMillis();
 			System.out.println("--== LOCAL SEARCH (Geometric) ==--");
-			System.out.println("Initial box count: " + initialBoxCount + " | Final box count: " + result.boxes.size() + " |  Elapsed Time: " + (stopTime - startTime) + "ms");
+			System.out.println("Initial box count: " + initialBoxCount + " | Final box count: " + result.boxes.size() + " |  Elapsed Time: " + (stopTime - startTime) + "ms | Iterations: " + solver.iterationCount);
 		}
 	}
 	
-	@Ignore
+	@Test
 	public void testSimulatedAnnealingWithGeometricNeighborhood() {
 		SimulatedAnnealing solver = new SimulatedAnnealing();
-		GeometricNeighborhood permutationNeighborhood = new GeometricNeighborhood();
 		
 		BinPackingSolution initialSolution;
 		
 		for(int i = 0; i < INSTANCE_COUNT; i++){
 			try{
 				initialSolution = new GeometricBinPackingSolution(new ArrayList<BinPackingRectangle>(Arrays.asList(rectanglesGroups[i])), BOX_LENGTH, 0);
+				GeometricNeighborhood permutationNeighborhood = new GeometricNeighborhood(initialSolution);
 				int initialBoxCount = initialSolution.boxes.size();
 				long startTime = System.currentTimeMillis();
 				BinPackingSolution result = (BinPackingSolution) solver.solve(initialSolution, permutationNeighborhood);
 				long stopTime = System.currentTimeMillis();
 				System.out.println("--== SIMULATED ANNEALING (Geometric) ==--");
-				System.out.println("Initial box count: " + initialBoxCount + " | Final box count: " + result.boxes.size() + " |  Elapsed Time: " + (stopTime - startTime) + "ms");
+				System.out.println("Initial box count: " + initialBoxCount + " | Final box count: " + result.boxes.size() + " |  Elapsed Time: " + (stopTime - startTime) + "ms | Iterations: " + solver.iterationCount);
 			}catch(Exception e){
 				//System.out.println(n.log);
 				System.out.println(rectanglesStrings[i]);
@@ -99,19 +99,19 @@ public class Tests {
 	@Test
 	public void testTabooSearchWithGeometricNeighborhood() {
 		TabooSearch solver = new TabooSearch();
-		GeometricNeighborhood neighborhood = new GeometricNeighborhood();
 		
 		BinPackingSolution initialSolution;
 		
 		for(int i = 0; i < INSTANCE_COUNT; i++){
 			try{
 				initialSolution = new GeometricBinPackingSolution(new ArrayList<BinPackingRectangle>(Arrays.asList(rectanglesGroups[i])), BOX_LENGTH, 0);
+				GeometricNeighborhood neighborhood = new GeometricNeighborhood(initialSolution);
 				int initialBoxCount = initialSolution.boxes.size();
 				long startTime = System.currentTimeMillis();
 				BinPackingSolution result = (BinPackingSolution) solver.solve(initialSolution, neighborhood);
 				long stopTime = System.currentTimeMillis();
 				System.out.println("--== TABOO SEARCH (Geometric) ==--");
-				System.out.println("Initial box count: " + initialBoxCount + " | Final box count: " + result.boxes.size() + " |  Elapsed Time: " + (stopTime - startTime) + "ms");
+				System.out.println("Initial box count: " + initialBoxCount + " | Final box count: " + result.boxes.size() + " |  Elapsed Time: " + (stopTime - startTime) + "ms | Iterations: " + solver.iterationCount);
 			}catch(Exception e){
 				//System.out.println(n.log);
 				System.out.println(rectanglesStrings[i]);
@@ -121,7 +121,7 @@ public class Tests {
 	}
 	
 	
-	@Ignore
+	@Test
 	public void testLocalSearchWithPermutationNeighborhood() {
 		LocalSearch solver = new LocalSearch();
 		PermutationNeighborhood permutationNeighborhood = new PermutationNeighborhood(BOX_LENGTH, 0);
@@ -136,7 +136,7 @@ public class Tests {
 				BinPackingSolution result = (BinPackingSolution) solver.solve(initialSolution, permutationNeighborhood);
 				long stopTime = System.currentTimeMillis();
 				System.out.println("--== LOCAL SEARCH (Permutation) ==--");
-				System.out.println("Initial box count: " + initialBoxCount + " | Final box count: " + result.boxes.size() + " |  Elapsed Time: " + (stopTime - startTime) + "ms");
+				System.out.println("Initial box count: " + initialBoxCount + " | Final box count: " + result.boxes.size() + " |  Elapsed Time: " + (stopTime - startTime) + "ms | Iterations: " + solver.iterationCount);
 			}catch(Exception e){
 				//System.out.println(n.log);
 				System.out.println(rectanglesStrings[i]);
@@ -145,7 +145,7 @@ public class Tests {
 		}
 	}
 	
-	@Ignore
+	@Test
 	public void testSimulatedAnnealingWithPermutationNeighborhood() {
 		SimulatedAnnealing solver = new SimulatedAnnealing();
 		PermutationNeighborhood permutationNeighborhood = new PermutationNeighborhood(BOX_LENGTH, 0);
@@ -160,7 +160,7 @@ public class Tests {
 				BinPackingSolution result = (BinPackingSolution) solver.solve(initialSolution, permutationNeighborhood);
 				long stopTime = System.currentTimeMillis();
 				System.out.println("--== SIMULATED ANNEALING (Permutation) ==--");
-				System.out.println("Initial box count: " + initialBoxCount + " | Final box count: " + result.boxes.size() + " |  Elapsed Time: " + (stopTime - startTime) + "ms");
+				System.out.println("Initial box count: " + initialBoxCount + " | Final box count: " + result.boxes.size() + " |  Elapsed Time: " + (stopTime - startTime) + "ms | Iterations: " + solver.iterationCount);
 			}catch(Exception e){
 				//System.out.println(n.log);
 				System.out.println(rectanglesStrings[i]);
@@ -169,7 +169,7 @@ public class Tests {
 		}
 	}
 	
-	@Ignore
+	@Test
 	public void testTabooSearchWithPermutationNeighborhood() {
 		TabooSearch solver = new TabooSearch();
 		PermutationNeighborhood permutationNeighborhood = new PermutationNeighborhood(BOX_LENGTH, 0);
@@ -184,7 +184,7 @@ public class Tests {
 				long startTime = System.currentTimeMillis();
 				BinPackingSolution result = (BinPackingSolution) solver.solve(initialSolution, permutationNeighborhood);
 				long stopTime = System.currentTimeMillis();
-				System.out.println("TS Permutation final boxCount:  " + result.boxes.size() + ". Elapsed Time: " + (stopTime - startTime) + "ms");
+				System.out.println("TS Permutation final boxCount:  " + result.boxes.size() + ". Elapsed Time: " + (stopTime - startTime) + "ms | Iterations: " + solver.iterationCount);
 			}catch(Exception e){
 				System.out.println(rectanglesStrings[i]);
 				throw e;
@@ -193,9 +193,9 @@ public class Tests {
 	}
 	
 	
-	@Test
+	@Ignore
 	public void manualTesting(){
-		/*
+	
 		BinPackingRectangle[] rects = new BinPackingRectangle[30];
 		rects[0] = (new BinPackingRectangle(1, 1, 1));
 		rects[1] = (new BinPackingRectangle(2, 1, 3));
@@ -227,58 +227,17 @@ public class Tests {
 		rects[27] = (new BinPackingRectangle(28, 1, 1));
 		rects[28] = (new BinPackingRectangle(29, 2, 3));
 		rects[29] = (new BinPackingRectangle(30, 1, 3));
-		*/
+	
 		
 		
-		FeasibleSolution s = new PermutationBinPackingSolution(new ArrayList<BinPackingRectangle>(Arrays.asList(rectanglesGroups[0])), BOX_LENGTH, 0);
-		PermutationNeighborhood n = new PermutationNeighborhood(BOX_LENGTH, 0);
-		
+		FeasibleSolution s = new GeometricBinPackingSolution(new ArrayList<BinPackingRectangle>(Arrays.asList(rects)), BOX_LENGTH, 0);
+		GeometricNeighborhood n = new GeometricNeighborhood(s);
+		System.out.println(s.getCost());
 		
 		for(int i=0; i < 1; i++){
 			s = n.getBestNeighbor(s, new HashSet<Feature>());
+			System.out.println(s.getCost());
 		}
 		
 	}
-
-
-@Test
-public void vectorTest() {
-	BinPackingRectangle[] rects = new BinPackingRectangle[5];
-	rects[0] = (new BinPackingRectangle(1, 1, 1));
-	rects[1] = (new BinPackingRectangle(2, 1, 3));
-	rects[2] = (new BinPackingRectangle(3, 1, 3));
-	rects[3] = (new BinPackingRectangle(4, 2, 3));
-	rects[4] = (new BinPackingRectangle(5, 1, 3));
-	
-	int boxCount = 0;
-	int [] v = new int [BOX_LENGTH];
-	boolean b = false;
-	
-	FeasibleSolution s = new PermutationBinPackingSolution(new ArrayList<BinPackingRectangle>(Arrays.asList(rects)), BOX_LENGTH, 0);
-	PermutationNeighborhood n = new PermutationNeighborhood(BOX_LENGTH, 0);
-	n.initfreeCells();
-	v = n.freeCells;
-	for(int i=0; i< BOX_LENGTH; i++) {
-		System.out.println("vector" + i + ": " + v[i]);
-		}
-	
-	ArrayList<BinPackingRectangle> rectangles = ((PermutationBinPackingSolution) s).rectangles;
-	for (BinPackingRectangle rectangle : rectangles) {
-		b = n.setFreeCells(rectangle.getShortSide(), rectangle.getLongSide());
-		if (b) {
-			v = n.freeCells;
-			System.out.println();
-			for(int i=0; i< BOX_LENGTH; i++) {
-			System.out.println("id: " + rectangle.getId() + " vector " + i + ": " + v[i]);
-			}
-		}
-		else if (!b) {
-			boxCount++;
-			n.initfreeCells();
-			n.setFreeCells(rectangle.getShortSide(), rectangle.getLongSide());
-
-		}
-	}
-	System.out.println("BoxCount" + boxCount);
-}
 }

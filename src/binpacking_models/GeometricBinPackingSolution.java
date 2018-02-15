@@ -1,8 +1,10 @@
-package models;
+package binpacking_models;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import geometric_models.BinPackingRectangle;
+import geometric_models.Box;
 import interfaces.Feature;
 
 public class GeometricBinPackingSolution extends BinPackingSolution{

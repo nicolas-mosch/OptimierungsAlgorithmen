@@ -2,29 +2,32 @@ package neighborhoods;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.Set;
 
+import binpacking_models.BinPackingSolution;
+import binpacking_models.GeometricBinPackingSolution;
+import binpacking_models.GeometricBinPackingSolutionFeature;
+import geometric_models.BinPackingRectangle;
+import geometric_models.Box;
 import interfaces.FeasibleSolution;
 import interfaces.Feature;
 import interfaces.Neighborhood;
-import models.BinPackingSolution;
-import models.Box;
-import models.GeometricBinPackingSolution;
-import models.GeometricBinPackingSolutionFeature;
-import models.BinPackingRectangle;
 
 public class GeometricNeighborhood implements Neighborhood {
 	
 	private int allowedOverlapping = 0;
 	
-	private class Move implements Comparable<Move>{
+	private HashMap<Integer, ArrayList<ApproximateNeighbor>> approximateNeighborMap;
+	
+	private class ApproximateNeighbor implements Comparable<ApproximateNeighbor>{
 		public final boolean isSwap;
 		public final Box destinationBox;
 		public final BinPackingRectangle r1, r2;
 		double costDelta;
 		
-		public Move(BinPackingRectangle r1, BinPackingRectangle r2){
+		public ApproximateNeighbor(BinPackingRectangle r1, BinPackingRectangle r2){
 			this.r1 = r1;
 			this.r2 = r2;
 			this.isSwap = true;
@@ -56,7 +59,7 @@ public class GeometricNeighborhood implements Neighborhood {
 			}
 		}
 		
-		public Move(BinPackingRectangle r, Box b){
+		public ApproximateNeighbor(BinPackingRectangle r, Box b){
 			isSwap = false;
 			r1 = r;
 			destinationBox = b;
@@ -82,68 +85,98 @@ public class GeometricNeighborhood implements Neighborhood {
 		}
 
 		@Override
-		public int compareTo(Move o) {
+		public int compareTo(ApproximateNeighbor o) {
 			return new Double(costDelta).compareTo(o.costDelta);
 		}
 	}
 	
+	public GeometricNeighborhood(FeasibleSolution solution){
+		approximateNeighborMap = new HashMap<>();
+		GeometricBinPackingSolution s = (GeometricBinPackingSolution) solution;
+		int i, j;
+		BinPackingRectangle r1, r2;
+		
+		for(i = 0; i < s.rectangles.size(); i++){
+			r1 = s.rectangles.get(i);
+			approximateNeighborMap.put(r1.getId(), new ArrayList<ApproximateNeighbor>());
+			setApproximateNeighborsForRect(r1, s);
+		}
+		
+	}
 	
-	@Override
-	public FeasibleSolution getBestNeighbor(FeasibleSolution solution, Set<Feature> tabooList) {
-		GeometricBinPackingSolution s = ((GeometricBinPackingSolution) solution).deepCopy(); 
+	private void setApproximateNeighborsForRect(BinPackingRectangle r1, GeometricBinPackingSolution s){
+		approximateNeighborMap.get(r1.getId()).clear();
 		
-		
-		ArrayList<Move> possibleMoves = new ArrayList<Move>();
-		
-		for(BinPackingRectangle r1: s.rectangles){
-			if(tabooList.contains(new GeometricBinPackingSolutionFeature(r1))){
-				continue;
-			}
-			
-			for(Box b: s.boxes){
-				if(r1.getBox() != b && b.getFreeSurface() >= r1.getSurface()){
-					possibleMoves.add(new Move(r1, b));
-				}
-			}
-			
-			for(BinPackingRectangle r2: s.rectangles){
-				if(
-					!tabooList.contains(new GeometricBinPackingSolutionFeature(r2))
-					&& r1.getBox() != r2.getBox()
-					&& r2.getBox().getFreeSurface() + r2.getSurface() >= r1.getSurface()
-					&& r1.getBox().getFreeSurface() + r1.getSurface() >= r2.getSurface()
-				){
-					possibleMoves.add(new Move(r1, r2));
-				}
+		// Moves
+		for(Box b: s.boxes){
+			if(r1.getBox() != b && b.getFreeSurface() >= r1.getSurface()){
+				approximateNeighborMap.get(r1.getId()).add(new ApproximateNeighbor(r1, b));
 			}
 		}
 		
-		Collections.sort(possibleMoves);
+		BinPackingRectangle r2;
+		// Swaps
+		for(int j = s.rectangles.indexOf(r1) + 1; j < s.rectangles.size(); j++){
+			r2 = s.rectangles.get(j);
+			if(
+				r1.getBox() != r2.getBox()
+				&& r2.getBox().getFreeSurface() + r2.getSurface() >= r1.getSurface()
+				&& r1.getBox().getFreeSurface() + r1.getSurface() >= r2.getSurface()
+				&& !r1.isLike(r2)
+			){
+				approximateNeighborMap.get(r1.getId()).add(new ApproximateNeighbor(r1, r2));
+			}
+		}
+	}
+	
+	@Override
+	public FeasibleSolution getBestNeighbor(FeasibleSolution solution, Set<Feature> tabooList) {
+		
+		GeometricBinPackingSolution s = ((GeometricBinPackingSolution) solution).deepCopy(); 
+		
+		ArrayList<ApproximateNeighbor> approximateNeighbors = new ArrayList<>();
+		
+		for(ArrayList<ApproximateNeighbor> a: approximateNeighborMap.values()){
+			approximateNeighbors.addAll(a);
+		}
+		
+		
+		Collections.sort(approximateNeighbors);
 		
 		Box b1, b2;
 		
-		for(Move m: possibleMoves){
+		for(ApproximateNeighbor m: approximateNeighbors){
 			if(m.isSwap){
 				b1 = m.r1.getBox();
 				b2 = m.r2.getBox();
-				b1.removeRectangle(m.r1);
-				b2.removeRectangle(m.r2);
+				b1.saveCurrentState();
+				b2.saveCurrentState();
 				if(
 					b1.tryInsertRectangleBySize(m.r2, allowedOverlapping)
 					&& b2.tryInsertRectangleBySize(m.r1, allowedOverlapping)
 				){
+					for(BinPackingRectangle r: b1.getRectangles()){
+						setApproximateNeighborsForRect(r, s);
+					}
+					for(BinPackingRectangle r: b2.getRectangles()){
+						setApproximateNeighborsForRect(r, s);
+					}
 					return s;
 				}else{
-					b1.removeRectangle(m.r2);
-					b2.removeRectangle(m.r1);
-					b1.tryInsertRectangleBySize(m.r1, allowedOverlapping);
-					b2.tryInsertRectangleBySize(m.r2, allowedOverlapping);
+					b1.restoreSavedState();
+					b2.restoreSavedState();
 				}
 			}else{
 				b1 = m.r1.getBox();
 				b2 = m.destinationBox;
 				if(b2.tryInsertRectangleBySize(m.r1, allowedOverlapping)){
 					b1.removeRectangle(m.r1);
+					for(BinPackingRectangle r: b1.getRectangles()){
+						setApproximateNeighborsForRect(r, s);
+					}
+					for(BinPackingRectangle r: b2.getRectangles()){
+						setApproximateNeighborsForRect(r, s);
+					}
 					return s;
 				}
 			}
@@ -227,6 +260,9 @@ public class GeometricNeighborhood implements Neighborhood {
 								- (surfaceB2 + r2.getSurface() - r1.getSurface()) * (surfaceB2 + r2.getSurface() - r1.getSurface())
 								< costB1 + costB2
 						){
+							b1.saveCurrentState();
+							b2.saveCurrentState();
+							
 							b1.removeRectangle(r1);
 							b2.removeRectangle(r2);
 							if(b1.tryInsertRectangleBySize(r2, allowedOverlapping) && b2.tryInsertRectangleBySize(r1, allowedOverlapping)){
@@ -234,12 +270,8 @@ public class GeometricNeighborhood implements Neighborhood {
 								r2.highlight = true;
 								return new GeometricBinPackingSolution(newBoxes);
 							}else{
-								b1.removeRectangle(r2);
-								b2.removeRectangle(r1);
 								b1.restoreSavedState();
 								b2.restoreSavedState();
-								b1.insertRectangleAtPosition(r1);
-								b2.insertRectangleAtPosition(r2);
 							}
 						}
 					}

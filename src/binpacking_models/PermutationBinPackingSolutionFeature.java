@@ -1,4 +1,4 @@
-package models;
+package binpacking_models;
 
 import interfaces.Feature;
 

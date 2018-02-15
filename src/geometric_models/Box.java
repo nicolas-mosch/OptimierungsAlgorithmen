@@ -1,4 +1,4 @@
-package models;
+package geometric_models;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,6 +17,8 @@ public class Box implements Comparable<Box>{
 	private ArrayList<BinPackingRectangle> rectangles;
 	private final int id;
 	private ArrayList<BinPackingRectangle> storedRectangles; 
+	private boolean hasChanged;
+	private double cost;
 	/**
 	 * @param length
 	 */
@@ -24,7 +26,8 @@ public class Box implements Comparable<Box>{
 		this.length = length;
 		rectangles = new ArrayList<BinPackingRectangle>();
 		this.id = id; 
-		
+		hasChanged = false;
+		cost = 0;
 	}
 
 	public int getLength() {
@@ -72,6 +75,7 @@ public class Box implements Comparable<Box>{
 				}
 				n.setBox(this);
 				rectangles.add(n);
+				hasChanged = true;
 				return true;
 			}while(col <= length - n.getShortSide());
 		}
@@ -92,8 +96,7 @@ public class Box implements Comparable<Box>{
 					}
 					n.setBox(this);
 					rectangles.add(n);
-					//System.out.println("Success:");
-					//System.out.println(this);
+					hasChanged = true;
 					return true;
 				}while(col <= length - n.getLongSide());
 			}
@@ -168,6 +171,7 @@ public class Box implements Comparable<Box>{
 			return false;
 		}
 		n.setBox(this);
+		hasChanged = true;
 		return true;
 	}
 	
@@ -190,19 +194,10 @@ public class Box implements Comparable<Box>{
 				return false;
 			}
 		}
-		System.out.println("Successfully inserted |" + n + "| into box " + id + ": 1");
 		rectangles.add(n);
 		n.setBox(this); 
+		hasChanged = true;
 		return true;
-	}
-	
-	
-	/** Inserts the given rectangle while keeping its current position, and without any additional checks.
-	 * @param n
-	 */
-	public void insertRectangleAtPosition(BinPackingRectangle n){
-		rectangles.add(n);
-		n.setBox(this); 
 	}
 	
 	/** Removes the given rectangle from the box if contained
@@ -211,6 +206,7 @@ public class Box implements Comparable<Box>{
 	 */
 	public boolean removeRectangle(BinPackingRectangle r){
 		if(rectangles.remove(r)){ 
+			hasChanged = true;
 			return true;
 		}
 		return false;
@@ -224,6 +220,7 @@ public class Box implements Comparable<Box>{
 		if(!rectangles.contains(r))
 			return false;
 		while(r != rectangles.remove(rectangles.size() - 1));
+		hasChanged = true;
 		return true;
 	}
 	
@@ -304,6 +301,8 @@ public class Box implements Comparable<Box>{
 			rcopy.setBox(res);
 			res.rectangles.add(rcopy);
 		}
+		res.cost = this.cost;
+		res.hasChanged = this.hasChanged;
 		return res;
 	}
 	
@@ -349,4 +348,13 @@ public class Box implements Comparable<Box>{
 		}
 		return true;
 	}
+	
+	public double getCost(){
+		if(hasChanged){
+			cost = Math.pow(this.getOccupiedSurface(), 2) / Math.pow(length, 5);
+			hasChanged = false;
+		}
+		return cost;
+	}
+	
 }

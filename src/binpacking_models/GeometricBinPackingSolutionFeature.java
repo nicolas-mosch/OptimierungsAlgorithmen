@@ -1,5 +1,6 @@
-package models;
+package binpacking_models;
 
+import geometric_models.BinPackingRectangle;
 import interfaces.Feature;
 
 public class GeometricBinPackingSolutionFeature extends Feature{

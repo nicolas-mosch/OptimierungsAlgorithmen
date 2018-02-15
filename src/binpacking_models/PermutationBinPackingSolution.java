@@ -1,10 +1,13 @@
-package models;
+package binpacking_models;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+import geometric_models.BinPackingRectangle;
+import geometric_models.Box;
+import geometric_models.Pair;
 import interfaces.Feature;
 
 public class PermutationBinPackingSolution extends BinPackingSolution{

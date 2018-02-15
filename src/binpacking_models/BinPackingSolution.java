@@ -1,7 +1,9 @@
-package models;
+package binpacking_models;
 
 import java.util.ArrayList;
 
+import geometric_models.BinPackingRectangle;
+import geometric_models.Box;
 import interfaces.FeasibleSolution;
 
 public abstract class BinPackingSolution implements FeasibleSolution {
@@ -25,17 +27,19 @@ public abstract class BinPackingSolution implements FeasibleSolution {
 	}
 	
 	public BinPackingSolution(ArrayList<BinPackingRectangle> rectangles, int boxLength, float allowedOverlapping){
-		this.rectangles = rectangles;
+		this.rectangles = new ArrayList<>(rectangles);
 		boxes = new ArrayList<Box>();
-		Box currentBox = new Box(0, boxLength);
+		
+		rectangleLoop:
 		for(BinPackingRectangle r: rectangles){
-			if(!currentBox.tryInsertRectangle(r, allowedOverlapping)){
-				boxes.add(currentBox);
-				currentBox = new Box(boxes.size(), boxLength);
-				currentBox.tryInsertRectangle(r, 0);
+			for(Box b: boxes){
+				if(b.tryInsertRectangle(r, 0)){
+					continue rectangleLoop;
+				}
 			}
+			boxes.add(new Box(boxes.size(), boxLength));
+			boxes.get(boxes.size() - 1).tryInsertRectangle(r, 0);
 		}
-		boxes.add(currentBox);
 	}
 	
 	public BinPackingSolution(ArrayList<BinPackingRectangle> rectangles, ArrayList<Box> boxes){
@@ -43,15 +47,11 @@ public abstract class BinPackingSolution implements FeasibleSolution {
 		this.boxes = boxes;
 	}
 	
-	protected double boxCost(Box b){
-		return Math.pow(b.getOccupiedSurface(), 2) / Math.pow(b.getLength(), 5);
-	}
-	
 	@Override
 	public double getCost() {
 		double c = 0;
 		for(Box b: boxes){
-			c -= boxCost(b); 
+			c -= b.getCost(); 
 		}
 		return c;
 	} 

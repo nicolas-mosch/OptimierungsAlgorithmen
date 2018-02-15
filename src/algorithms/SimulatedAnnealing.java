@@ -6,6 +6,7 @@ import interfaces.FeasibleSolution;
 import interfaces.Neighborhood;
 
 public class SimulatedAnnealing {
+	public int iterationCount;
 	public long maxRunTime = 10000;
 	
 	public FeasibleSolution solve(FeasibleSolution currentSolution, Neighborhood n){
@@ -17,6 +18,7 @@ public class SimulatedAnnealing {
 		double temperature = 1.0;
 		
 		while(System.currentTimeMillis() - startTime < maxRunTime){
+			++iterationCount;
 			nextSolution = n.getRandomNeighbor(currentSolution);
 			if(nextSolution.getCost() < currentSolution.getCost()){
 				currentSolution = nextSolution;

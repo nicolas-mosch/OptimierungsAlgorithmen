@@ -1,4 +1,4 @@
-package models;
+package geometric_models;
 
 public class Point implements Comparable<Point> {
 	public final int x;

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
 
-import models.BinPackingRectangle;
+import geometric_models.BinPackingRectangle;
 
 public class RectangleGenerator {
 	
