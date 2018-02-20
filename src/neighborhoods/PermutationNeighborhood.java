@@ -39,7 +39,7 @@ public class PermutationNeighborhood implements Neighborhood {
 	}
 
 
-	@Oeerride
+	@Override
 	public FeasibleSolution getAugmentingNeighbor(FeasibleSolution solution) {
 		// TODO Auto-generated method stub
 		return null;
@@ -49,6 +49,6 @@ public class PermutationNeighborhood implements Neighborhood {
 	public FeasibleSolution getRandomNeighbor(FeasibleSolution solution) {
 		// TODO Auto-generated method stub
 		return null;
-	
+	}
 
 }
