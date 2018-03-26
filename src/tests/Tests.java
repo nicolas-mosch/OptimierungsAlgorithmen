@@ -23,11 +23,11 @@ import neighborhoods.PermutationNeighborhood;
 
 public class Tests {
 	
-	private static final int INSTANCE_COUNT = 1;
+	private static final int INSTANCE_COUNT = 5;
 	private static final int RECTANGLE_COUNT = 1000;
 	private static final int MIN_SIDE_LENGTH = 1;
-	private static final int MAX_SIDE_LENGTH = 4;
-	private static final int BOX_LENGTH = 5;
+	private static final int MAX_SIDE_LENGTH = 7;
+	private static final int BOX_LENGTH = 10;
 	
 	private static BinPackingRectangle[][] rectanglesGroups;
 	private static String[] rectanglesStrings;
@@ -121,10 +121,10 @@ public class Tests {
 	}
 	
 	
-	@Ignore
+	@Test
 	public void testLocalSearchWithPermutationNeighborhood() {
 		LocalSearch solver = new LocalSearch();
-		PermutationNeighborhood permutationNeighborhood = new PermutationNeighborhood(BOX_LENGTH, 0);
+		PermutationNeighborhood permutationNeighborhood = new PermutationNeighborhood(BOX_LENGTH);
 		
 		BinPackingSolution initialSolution;
 		
@@ -145,10 +145,10 @@ public class Tests {
 		}
 	}
 	
-	@Ignore
+	@Test
 	public void testSimulatedAnnealingWithPermutationNeighborhood() {
 		SimulatedAnnealing solver = new SimulatedAnnealing();
-		PermutationNeighborhood permutationNeighborhood = new PermutationNeighborhood(BOX_LENGTH, 0);
+		PermutationNeighborhood permutationNeighborhood = new PermutationNeighborhood(BOX_LENGTH);
 		
 		BinPackingSolution initialSolution;
 		
@@ -169,10 +169,10 @@ public class Tests {
 		}
 	}
 	
-	@Ignore
+	@Test
 	public void testTabooSearchWithPermutationNeighborhood() {
 		TabooSearch solver = new TabooSearch();
-		PermutationNeighborhood permutationNeighborhood = new PermutationNeighborhood(BOX_LENGTH, 0);
+		PermutationNeighborhood permutationNeighborhood = new PermutationNeighborhood(BOX_LENGTH);
 		
 		BinPackingSolution initialSolution;
 		
@@ -180,7 +180,6 @@ public class Tests {
 			try{
 				initialSolution = new PermutationBinPackingSolution(new ArrayList<BinPackingRectangle>(Arrays.asList(rectanglesGroups[i])), BOX_LENGTH, 0);
 				System.out.println("TS Permutation initial boxCount:  " + initialSolution.boxes.size());
-				System.out.println("TS Initial Solution:  \n" + initialSolution);
 				long startTime = System.currentTimeMillis();
 				BinPackingSolution result = (BinPackingSolution) solver.solve(initialSolution, permutationNeighborhood);
 				long stopTime = System.currentTimeMillis();

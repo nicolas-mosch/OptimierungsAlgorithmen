@@ -29,6 +29,10 @@ public class PermutationBinPackingSolution extends BinPackingSolution{
 		originalBoxCosts = new HashMap<Box, Double>();
 	}
 
+	public PermutationBinPackingSolution(ArrayList<BinPackingRectangle> permutation, int boxLength) {
+		super(permutation, boxLength, 0);
+	}
+
 	@Override
 	public HashSet<Feature> getFeatures() {
 		HashSet<Feature> features = new HashSet<Feature>();

@@ -118,7 +118,7 @@ public class MainWindowController{
 	public void initializeStandardPermutationLocalSearch(){
 		solver = new InteractiveBinPackingLocalSearch(
     			initialSolution,
-    		new PermutationNeighborhood(instanceParameters.boxLength, 0)
+    		new PermutationNeighborhood(instanceParameters.boxLength)
     	);
     	
 		iteration = 0;
