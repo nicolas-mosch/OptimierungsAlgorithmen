@@ -24,10 +24,10 @@ import neighborhoods.PermutationNeighborhood;
 public class Tests {
 	
 	private static final int INSTANCE_COUNT = 5;
-	private static final int RECTANGLE_COUNT = 1000;
+	private static final int RECTANGLE_COUNT = 53;
 	private static final int MIN_SIDE_LENGTH = 1;
-	private static final int MAX_SIDE_LENGTH = 7;
-	private static final int BOX_LENGTH = 10;
+	private static final int MAX_SIDE_LENGTH = 5;
+	private static final int BOX_LENGTH = 5;
 	
 	private static BinPackingRectangle[][] rectanglesGroups;
 	private static String[] rectanglesStrings;

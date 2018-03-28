@@ -43,6 +43,18 @@
                         <MenuItem mnemonicParsing="false" onAction="#initializeStandardPermutationLocalSearch" text="Permutation Neighborhood" />
                     </items>
                   </Menu>
+                  <Menu mnemonicParsing="false" text="Simulated Annealing">
+                    <items>
+      						<MenuItem mnemonicParsing="false" onAction="#initializeStandardGeometricLocalSearch" text="Geometric Neighborhood" />
+                        <MenuItem mnemonicParsing="false" onAction="#initializeStandardPermutationLocalSearch" text="Permutation Neighborhood" />
+                    </items>
+                  </Menu>
+                  <Menu mnemonicParsing="false" text="Taboo Search">
+                    <items>
+      						<MenuItem mnemonicParsing="false" onAction="#initializeStandardGeometricLocalSearch" text="Geometric Neighborhood" />
+                        <MenuItem mnemonicParsing="false" onAction="#initializeStandardPermutationLocalSearch" text="Permutation Neighborhood" />
+                    </items>
+                  </Menu>
 					</items>
 				</Menu>
 				<Menu mnemonicParsing="false" text="Help">
