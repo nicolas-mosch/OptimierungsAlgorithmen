@@ -5,31 +5,31 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-import geometric_models.BinPackingRectangle;
+import geometric_models.Rectangle;
 import geometric_models.Box;
 import geometric_models.Pair;
 import interfaces.Feature;
 
-public class PermutationBinPackingSolution extends BinPackingSolution{
+public class PermutationSolution extends Solution{
 
 	private LinkedList<Box> modifiedBoxes;
 	private Pair<Integer, Integer> swap;
 	HashMap<Box, Double> originalBoxCosts;
 	
 	
-	public PermutationBinPackingSolution(ArrayList<BinPackingRectangle> newRectangles, ArrayList<Box> newBoxes) {
+	public PermutationSolution(ArrayList<Rectangle> newRectangles, ArrayList<Box> newBoxes) {
 		super(newRectangles, newBoxes);
 		modifiedBoxes = new LinkedList<Box>();
 		originalBoxCosts = new HashMap<Box, Double>();
 	}
 
-	public PermutationBinPackingSolution(ArrayList<BinPackingRectangle> rectangles, int boxLength, int allowedOverlapping) {
+	public PermutationSolution(ArrayList<Rectangle> rectangles, int boxLength, int allowedOverlapping) {
 		super(rectangles, boxLength, allowedOverlapping);
 		modifiedBoxes = new LinkedList<Box>();
 		originalBoxCosts = new HashMap<Box, Double>();
 	}
 
-	public PermutationBinPackingSolution(ArrayList<BinPackingRectangle> permutation, int boxLength) {
+	public PermutationSolution(ArrayList<Rectangle> permutation, int boxLength) {
 		super(permutation, boxLength, 0);
 	}
 
@@ -41,7 +41,7 @@ public class PermutationBinPackingSolution extends BinPackingSolution{
 		}
 		for(int i = 0; i < super.rectangles.size(); i++){
 			features.add(
-				new PermutationBinPackingSolutionFeature(
+				new PermutationSolutionFeature(
 					super.rectangles.get(i).getId(),
 					//i == 0 ? -1 : super.rectangles.get(i - 1).getId()
 					i
@@ -51,8 +51,8 @@ public class PermutationBinPackingSolution extends BinPackingSolution{
 		return features;
 	}
 	
-	public PermutationBinPackingSolution deepCopy(){
-		ArrayList<BinPackingRectangle> newRectangles = new ArrayList<BinPackingRectangle>();
+	public PermutationSolution deepCopy(){
+		ArrayList<Rectangle> newRectangles = new ArrayList<Rectangle>();
 		ArrayList<Box> newBoxes = new ArrayList<Box>();
 		Box box;
 		for(Box b: boxes){
@@ -62,14 +62,14 @@ public class PermutationBinPackingSolution extends BinPackingSolution{
 			box.saveCurrentState();
 		}
 		
-		return new PermutationBinPackingSolution(newRectangles, newBoxes);
+		return new PermutationSolution(newRectangles, newBoxes);
 	}
 	
 	public void swapRectanglePositions(int i, int j, float allowedOverlapping){
 		swap = new Pair<Integer, Integer>(i, j);
 		
-		BinPackingRectangle r1 = rectangles.get(i);
-		BinPackingRectangle r2 = rectangles.get(j);
+		Rectangle r1 = rectangles.get(i);
+		Rectangle r2 = rectangles.get(j);
 		
 		Box b1 = r1.getBox();
 		Box b2 = r2.getBox();
@@ -91,7 +91,7 @@ public class PermutationBinPackingSolution extends BinPackingSolution{
 			box.removeRectanglesInsertedFrom(r1);
 		}
 		
-		BinPackingRectangle r;
+		Rectangle r;
 		
 		while(ri < rectangles.size()){
 			r = rectangles.get(ri);
@@ -184,7 +184,7 @@ public class PermutationBinPackingSolution extends BinPackingSolution{
 			b.restoreSavedState();
 		}
 		originalBoxCosts.clear();
-		BinPackingRectangle r = rectangles.get(swap.a);
+		Rectangle r = rectangles.get(swap.a);
 		rectangles.set(swap.a, rectangles.get(swap.b));
 		rectangles.set(swap.b, r);
 	}

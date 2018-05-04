@@ -6,10 +6,10 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.Set;
 
-import binpacking_models.BinPackingSolution;
-import binpacking_models.GeometricBinPackingSolution;
-import binpacking_models.GeometricBinPackingSolutionFeature;
-import geometric_models.BinPackingRectangle;
+import binpacking_models.Solution;
+import binpacking_models.GeometricSolution;
+import binpacking_models.GeometricSolutionFeature;
+import geometric_models.Rectangle;
 import geometric_models.Box;
 import interfaces.FeasibleSolution;
 import interfaces.Feature;
@@ -24,10 +24,10 @@ public class GeometricNeighborhood implements Neighborhood {
 	private class ApproximateNeighbor implements Comparable<ApproximateNeighbor>{
 		public final boolean isSwap;
 		public final Box destinationBox;
-		public final BinPackingRectangle r1, r2;
+		public final Rectangle r1, r2;
 		double costDelta;
 		
-		public ApproximateNeighbor(BinPackingRectangle r1, BinPackingRectangle r2){
+		public ApproximateNeighbor(Rectangle r1, Rectangle r2){
 			this.r1 = r1;
 			this.r2 = r2;
 			this.isSwap = true;
@@ -39,13 +39,9 @@ public class GeometricNeighborhood implements Neighborhood {
 				Box b1 = r1.getBox();
 				Box b2 = r2.getBox();
 				
-				double oldBoxCost1 = Math.pow(
-						b1.getOccupiedSurface(), 2
-					) / Math.pow(b1.getLength(), 5);
+				double oldBoxCost1 = b1.getCost();
 				
-				double oldBoxCost2 = Math.pow(
-						b2.getOccupiedSurface(), 2
-					) / Math.pow(b2.getLength(), 5);
+				double oldBoxCost2 = b2.getCost();
 				
 				double newBoxCost1 = Math.pow(
 						b1.getOccupiedSurface() - r1.getSurface() + r2.getSurface(), 2
@@ -59,7 +55,7 @@ public class GeometricNeighborhood implements Neighborhood {
 			}
 		}
 		
-		public ApproximateNeighbor(BinPackingRectangle r, Box b){
+		public ApproximateNeighbor(Rectangle r, Box b){
 			isSwap = false;
 			r1 = r;
 			destinationBox = b;
@@ -92,9 +88,9 @@ public class GeometricNeighborhood implements Neighborhood {
 	
 	public GeometricNeighborhood(FeasibleSolution solution){
 		approximateNeighborMap = new HashMap<>();
-		GeometricBinPackingSolution s = (GeometricBinPackingSolution) solution;
-		int i, j;
-		BinPackingRectangle r1, r2;
+		GeometricSolution s = (GeometricSolution) solution;
+		int i;
+		Rectangle r1;
 		
 		for(i = 0; i < s.rectangles.size(); i++){
 			r1 = s.rectangles.get(i);
@@ -104,7 +100,7 @@ public class GeometricNeighborhood implements Neighborhood {
 		
 	}
 	
-	private void setApproximateNeighborsForRect(BinPackingRectangle r1, GeometricBinPackingSolution s){
+	private void setApproximateNeighborsForRect(Rectangle r1, GeometricSolution s){
 		approximateNeighborMap.get(r1.getId()).clear();
 		
 		// Moves
@@ -114,7 +110,7 @@ public class GeometricNeighborhood implements Neighborhood {
 			}
 		}
 		
-		BinPackingRectangle r2;
+		Rectangle r2;
 		// Swaps
 		for(int j = s.rectangles.indexOf(r1) + 1; j < s.rectangles.size(); j++){
 			r2 = s.rectangles.get(j);
@@ -132,7 +128,7 @@ public class GeometricNeighborhood implements Neighborhood {
 	@Override
 	public FeasibleSolution getBestNeighbor(FeasibleSolution solution, Set<Feature> tabooList) {
 		
-		GeometricBinPackingSolution s = ((GeometricBinPackingSolution) solution).deepCopy(); 
+		GeometricSolution s = ((GeometricSolution) solution).deepCopy(); 
 		
 		ArrayList<ApproximateNeighbor> approximateNeighbors = new ArrayList<>();
 		
@@ -155,10 +151,10 @@ public class GeometricNeighborhood implements Neighborhood {
 					b1.tryInsertRectangleBySize(m.r2, allowedOverlapping)
 					&& b2.tryInsertRectangleBySize(m.r1, allowedOverlapping)
 				){
-					for(BinPackingRectangle r: b1.getRectangles()){
+					for(Rectangle r: b1.getRectangles()){
 						setApproximateNeighborsForRect(r, s);
 					}
-					for(BinPackingRectangle r: b2.getRectangles()){
+					for(Rectangle r: b2.getRectangles()){
 						setApproximateNeighborsForRect(r, s);
 					}
 					return s;
@@ -171,10 +167,10 @@ public class GeometricNeighborhood implements Neighborhood {
 				b2 = m.destinationBox;
 				if(b2.tryInsertRectangleBySize(m.r1, allowedOverlapping)){
 					b1.removeRectangle(m.r1);
-					for(BinPackingRectangle r: b1.getRectangles()){
+					for(Rectangle r: b1.getRectangles()){
 						setApproximateNeighborsForRect(r, s);
 					}
-					for(BinPackingRectangle r: b2.getRectangles()){
+					for(Rectangle r: b2.getRectangles()){
 						setApproximateNeighborsForRect(r, s);
 					}
 					return s;
@@ -189,7 +185,7 @@ public class GeometricNeighborhood implements Neighborhood {
 
 	@Override
 	public FeasibleSolution getAugmentingNeighbor(FeasibleSolution solution) {
-		GeometricBinPackingSolution s = ((GeometricBinPackingSolution) solution).deepCopy(); 
+		GeometricSolution s = ((GeometricSolution) solution).deepCopy(); 
 		
 		ArrayList<Box> newBoxes = s.boxes;
 		Collections.sort(newBoxes);
@@ -220,11 +216,11 @@ public class GeometricNeighborhood implements Neighborhood {
 				
 				// Try to move a rect from i to j
 				if(costB1 <= costB2){
-					for(BinPackingRectangle r: b1.getRectangles()){
+					for(Rectangle r: b1.getRectangles()){
 						if(b2.tryInsertRectangleBySize(r, allowedOverlapping)){
 							b1.removeRectangle(r);
 							r.highlight = true;
-							return new GeometricBinPackingSolution(newBoxes);
+							return new GeometricSolution(newBoxes);
 						}
 					}
 				}
@@ -232,7 +228,7 @@ public class GeometricNeighborhood implements Neighborhood {
 		}
 		
 		// Try to swap two rectangles of different boxes
-		BinPackingRectangle r1, r2;
+		Rectangle r1, r2;
 		for(i = 0; i < newBoxes.size(); i++){
 			for(j = newBoxes.size() - 1; j >= 0; j--){
 				if(i == j){
@@ -268,7 +264,7 @@ public class GeometricNeighborhood implements Neighborhood {
 							if(b1.tryInsertRectangleBySize(r2, allowedOverlapping) && b2.tryInsertRectangleBySize(r1, allowedOverlapping)){
 								r1.highlight = true;
 								r2.highlight = true;
-								return new GeometricBinPackingSolution(newBoxes);
+								return new GeometricSolution(newBoxes);
 							}else{
 								b1.restoreSavedState();
 								b2.restoreSavedState();
@@ -283,11 +279,11 @@ public class GeometricNeighborhood implements Neighborhood {
 	}
 
 	@Override
-	public BinPackingSolution getRandomNeighbor(FeasibleSolution solution) {
-		GeometricBinPackingSolution s = (GeometricBinPackingSolution) solution;
+	public Solution getRandomNeighbor(FeasibleSolution solution) {
+		GeometricSolution s = (GeometricSolution) solution;
 		Random rand = new Random();
 		ArrayList<Box> newBoxes = new ArrayList<Box>();
-		ArrayList<BinPackingRectangle> newRectangles = new ArrayList<BinPackingRectangle>();
+		ArrayList<Rectangle> newRectangles = new ArrayList<Rectangle>();
 		ArrayList<Integer> selectableBoxIndexes = new ArrayList<Integer>();
 		int i = 0;
 		for(Box b: s.boxes){
@@ -297,7 +293,7 @@ public class GeometricNeighborhood implements Neighborhood {
 			i++;
 		}
 		
-		BinPackingRectangle r1 = newRectangles.get(rand.nextInt(newRectangles.size()));
+		Rectangle r1 = newRectangles.get(rand.nextInt(newRectangles.size()));
 		Box b1 = r1.getBox();
 		selectableBoxIndexes.remove(new Integer(newBoxes.indexOf(b1)));
 		
@@ -314,12 +310,12 @@ public class GeometricNeighborhood implements Neighborhood {
 			// Try to insert r into b
 			if(b2.tryInsertRectangleBySize(r1, allowedOverlapping)){
 				r1.highlight = true;
-				return new GeometricBinPackingSolution(newBoxes);
+				return new GeometricSolution(newBoxes);
 			}
 			
 			// Try to swap r with rectangle(s) in b
-			ArrayList<BinPackingRectangle> testRectangles = new ArrayList<BinPackingRectangle>(b2.getRectangles());
-			BinPackingRectangle r2;
+			ArrayList<Rectangle> testRectangles = new ArrayList<Rectangle>(b2.getRectangles());
+			Rectangle r2;
 			b1.saveCurrentState();
 			b2.saveCurrentState();
 			
@@ -330,7 +326,7 @@ public class GeometricNeighborhood implements Neighborhood {
 				if(b1.tryInsertRectangleBySize(r2, allowedOverlapping) && b2.tryInsertRectangleBySize(r1, allowedOverlapping)){
 					r1.highlight = true;
 					r2.highlight = true;
-					return new GeometricBinPackingSolution(newBoxes);
+					return new GeometricSolution(newBoxes);
 				}
 				b1.restoreSavedState();
 				b2.restoreSavedState();
@@ -339,7 +335,7 @@ public class GeometricNeighborhood implements Neighborhood {
 		}
 		newBoxes.add(new Box(newBoxes.size(), newBoxes.get(0).getLength()));
 		newBoxes.get(newBoxes.size() - 1).tryInsertRectangle(r1, allowedOverlapping);
-		return new GeometricBinPackingSolution(newBoxes);
+		return new GeometricSolution(newBoxes);
 		
 	}
 }

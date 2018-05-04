@@ -2,11 +2,11 @@ package binpacking_models;
 
 import interfaces.Feature;
 
-public class PermutationBinPackingSolutionFeature extends Feature {
+public class PermutationSolutionFeature extends Feature {
 	public final int rectangleId;
 	public final int leftRectangleId;
 	
-	public PermutationBinPackingSolutionFeature(int id, int left){
+	public PermutationSolutionFeature(int id, int left){
 		rectangleId = id;
 		leftRectangleId = left;
 	}
@@ -17,7 +17,7 @@ public class PermutationBinPackingSolutionFeature extends Feature {
 			return true;
         if (other == null || getClass() != other.getClass()) 
         	return false;
-        PermutationBinPackingSolutionFeature o = (PermutationBinPackingSolutionFeature) other;
+        PermutationSolutionFeature o = (PermutationSolutionFeature) other;
         
 		return rectangleId == o.rectangleId; 
 			//&& leftRectangleId == o.leftRectangleId;

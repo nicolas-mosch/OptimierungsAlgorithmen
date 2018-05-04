@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
 
-import binpacking_models.BinPackingSolution;
-import binpacking_models.GeometricBinPackingSolution;
+import binpacking_models.Solution;
+import binpacking_models.GeometricSolution;
 import generators.RectangleGenerator;
-import geometric_models.BinPackingRectangle;
+import geometric_models.Rectangle;
 import geometric_models.Box;
 import interactive_algorithms.InteractiveBinPackingLocalSearch;
 import interfaces.InteractiveBinPackingSolver;
@@ -38,8 +38,8 @@ public class MainWindowController{
 	@FXML private Button nextIterationButton;
 	private int iteration;
 	
-	private BinPackingSolution initialSolution;
-	private BinPackingRectangle[] rectangles;
+	private Solution initialSolution;
+	private Rectangle[] rectangles;
 	private NewInstanceParameters instanceParameters;
 	
 	
@@ -101,8 +101,8 @@ public class MainWindowController{
 	}
 	
 	public void initializeStandardGeometricLocalSearch(){
-		initialSolution = new GeometricBinPackingSolution(
-    		new ArrayList<BinPackingRectangle>(Arrays.asList(rectangles)),
+		initialSolution = new GeometricSolution(
+    		new ArrayList<Rectangle>(Arrays.asList(rectangles)),
     		instanceParameters.boxLength,
     		0
     	);
@@ -125,7 +125,7 @@ public class MainWindowController{
     	drawSolution(initialSolution);
 	}
 	
-	private void drawSolution(BinPackingSolution s){
+	private void drawSolution(Solution s){
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 		int multiplier = 30;
@@ -141,7 +141,7 @@ public class MainWindowController{
         		b.getLength() * multiplier
         	);
         	
-        	for(BinPackingRectangle r: b.getRectangles()){
+        	for(Rectangle r: b.getRectangles()){
             	gc.setFill(Color.WHITE);
         		gc.fillRect(
             		boxIndex * multiplier * b.getLength() + 1 + r.getX() * multiplier + + boxIndex * 10,
@@ -164,24 +164,24 @@ public class MainWindowController{
 	public void drawNextIteration(){
 		iteration++;
 		if(iteration % 3 == 1){
-			for(BinPackingRectangle r1: ((BinPackingSolution) solver.getNextSolution()).rectangles){
+			for(Rectangle r1: ((Solution) solver.getNextSolution()).rectangles){
 				if(r1.highlight){
-					for(BinPackingRectangle r2: ((BinPackingSolution) solver.getCurrentSolution()).rectangles){
+					for(Rectangle r2: ((Solution) solver.getCurrentSolution()).rectangles){
 						if(r1.getId() == r2.getId()){
 							r2.highlight = true;
 						}
 					}
 				}
 			}
-			drawSolution((BinPackingSolution) solver.getCurrentSolution());
+			drawSolution((Solution) solver.getCurrentSolution());
 		}else if(iteration % 3 == 2){
-			drawSolution((BinPackingSolution) solver.getNextSolution());
+			drawSolution((Solution) solver.getNextSolution());
 		}else{
 			solver.performNextStep();
-			for(BinPackingRectangle r2: ((BinPackingSolution) solver.getCurrentSolution()).rectangles){
+			for(Rectangle r2: ((Solution) solver.getCurrentSolution()).rectangles){
 				r2.highlight = false;
 			}
-			drawSolution((BinPackingSolution) solver.getCurrentSolution());
+			drawSolution((Solution) solver.getCurrentSolution());
 		}
 	}
 }

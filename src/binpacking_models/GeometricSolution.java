@@ -3,30 +3,30 @@ package binpacking_models;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import geometric_models.BinPackingRectangle;
+import geometric_models.Rectangle;
 import geometric_models.Box;
 import interfaces.Feature;
 
-public class GeometricBinPackingSolution extends BinPackingSolution{
+public class GeometricSolution extends Solution{
 	
-	public GeometricBinPackingSolution(ArrayList<Box> newBoxes) {
+	public GeometricSolution(ArrayList<Box> newBoxes) {
 		super(newBoxes);
 	}
 
-	public GeometricBinPackingSolution(ArrayList<BinPackingRectangle> rectangles, int boxLength, int allowedOverlapping) {
+	public GeometricSolution(ArrayList<Rectangle> rectangles, int boxLength, int allowedOverlapping) {
 		super(rectangles, boxLength, allowedOverlapping);
 	}
 
 	@Override
 	public HashSet<Feature> getFeatures(){
 		HashSet<Feature> features = new HashSet<Feature>();
-		for(BinPackingRectangle r: rectangles){
-			features.add(new GeometricBinPackingSolutionFeature(r));
+		for(Rectangle r: rectangles){
+			features.add(new GeometricSolutionFeature(r));
 		}
 		return features;
 	}
 	
-	public GeometricBinPackingSolution deepCopy(){
+	public GeometricSolution deepCopy(){
 		ArrayList<Box> newBoxes = new ArrayList<Box>();
 		Box box;
 		for(Box b: boxes){
@@ -34,6 +34,6 @@ public class GeometricBinPackingSolution extends BinPackingSolution{
 			newBoxes.add(box);
 			box.saveCurrentState();
 		}
-		return new GeometricBinPackingSolution(newBoxes);
+		return new GeometricSolution(newBoxes);
 	}
 }

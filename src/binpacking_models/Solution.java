@@ -2,17 +2,17 @@ package binpacking_models;
 
 import java.util.ArrayList;
 
-import geometric_models.BinPackingRectangle;
+import geometric_models.Rectangle;
 import geometric_models.Box;
 import interfaces.FeasibleSolution;
 
-public abstract class BinPackingSolution implements FeasibleSolution {
+public abstract class Solution implements FeasibleSolution {
 	
 	public ArrayList<Box> boxes;
-	public ArrayList<BinPackingRectangle> rectangles;
+	public ArrayList<Rectangle> rectangles;
 	
-	public BinPackingSolution(ArrayList<Box> boxes){
-		rectangles = new ArrayList<BinPackingRectangle>();
+	public Solution(ArrayList<Box> boxes){
+		rectangles = new ArrayList<Rectangle>();
 		
 		for(int i = 0; i < boxes.size(); i++){
 			if(boxes.get(i).isEmpty()){
@@ -26,12 +26,12 @@ public abstract class BinPackingSolution implements FeasibleSolution {
 		this.boxes = boxes;
 	}
 	
-	public BinPackingSolution(ArrayList<BinPackingRectangle> rectangles, int boxLength, float allowedOverlapping){
+	public Solution(ArrayList<Rectangle> rectangles, int boxLength, float allowedOverlapping){
 		this.rectangles = new ArrayList<>(rectangles);
 		boxes = new ArrayList<Box>();
 		
 		rectangleLoop:
-		for(BinPackingRectangle r: rectangles){
+		for(Rectangle r: rectangles){
 			for(Box b: boxes){
 				if(b.tryInsertRectangle(r, 0)){
 					continue rectangleLoop;
@@ -42,7 +42,7 @@ public abstract class BinPackingSolution implements FeasibleSolution {
 		}
 	}
 	
-	public BinPackingSolution(ArrayList<BinPackingRectangle> rectangles, ArrayList<Box> boxes){
+	public Solution(ArrayList<Rectangle> rectangles, ArrayList<Box> boxes){
 		this.rectangles = rectangles;
 		this.boxes = boxes;
 	}
@@ -75,5 +75,5 @@ public abstract class BinPackingSolution implements FeasibleSolution {
 		return result;
 	}
 	
-	public abstract BinPackingSolution deepCopy();
+	public abstract Solution deepCopy();
 }

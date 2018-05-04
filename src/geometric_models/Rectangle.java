@@ -6,17 +6,22 @@ import java.util.HashSet;
  * @author Nicolas
  *
  */
-public class BinPackingRectangle  implements Comparable<BinPackingRectangle>{
-	private final int longSide, shortSide;
+public class Rectangle  implements Comparable<Rectangle>{
 	private final int id;
+	private final int longSide, shortSide;
+	private final int surface;
 	public boolean highlight;
 	private Box box;
 	private int x, y;
 	private boolean isHorizontal;
+	private HashSet<Point> points;
+	private boolean hasChanged;
 	
 	private Box savedBox;
 	private int savedX, savedY;
 	private boolean savedIsHorizontal;
+	private HashSet<Point> savedPoints;
+	
 	
 	/**
 	 * @param id
@@ -24,7 +29,7 @@ public class BinPackingRectangle  implements Comparable<BinPackingRectangle>{
 	 * @param b
 	 */
 	
-	public BinPackingRectangle(int id, int a, int b){
+	public Rectangle(int id, int a, int b){
 		if(a > b){
 			longSide = a;
 			shortSide = b;
@@ -36,9 +41,12 @@ public class BinPackingRectangle  implements Comparable<BinPackingRectangle>{
 		this.x = 0;
 		this.y = 0;
 		highlight = false;
+		points = new HashSet<Point>();
+		hasChanged = false;
+		surface = a * b;
 	}
 	
-	public BinPackingRectangle(BinPackingRectangle r){
+	public Rectangle(Rectangle r){
 		id = r.id;
 		longSide = r.longSide;
 		shortSide = r.shortSide;
@@ -46,6 +54,9 @@ public class BinPackingRectangle  implements Comparable<BinPackingRectangle>{
 		y = r.y;
 		isHorizontal = r.isHorizontal;
 		highlight = false;
+		points = new HashSet<Point>(r.points);
+		hasChanged = r.hasChanged;
+		surface = r.surface;
 	}
 	
 	public int getLongSide(){
@@ -57,7 +68,7 @@ public class BinPackingRectangle  implements Comparable<BinPackingRectangle>{
 	}
 	
 	public int getSurface(){
-		return longSide * shortSide;
+		return surface;
 	}
 	
 	public int getId(){
@@ -65,6 +76,7 @@ public class BinPackingRectangle  implements Comparable<BinPackingRectangle>{
 	}
 	
 	public void setPosition(int x, int y){
+		hasChanged = this.x != x || this.y != y;
 		this.x = x;
 		this.y = y;
 	}
@@ -91,24 +103,8 @@ public class BinPackingRectangle  implements Comparable<BinPackingRectangle>{
 			return this.shortSide;
 	}
 	
-	public boolean overlaps(BinPackingRectangle r, float allowedOverlapping){
-		if(allowedOverlapping == 0){
-			return x < r.x + r.getWidth() && x + getWidth() > r.x && y < r.y + r.getHeight() && y + getHeight() > r.y;
-		}
-		
-		int left = Math.max(x, r.x);
-		int right = Math.min(x + this.getWidth(), r.x + r.getWidth());
-		int bottom = Math.max(y, r.y);
-		int top = Math.min(y + this.getHeight(), r.y + r.getHeight());
-		
-		if(left < right && bottom < top){
-			return false;
-		}
-		
-		return (((right - left) * (top - bottom)) / Math.max(this.getSurface(), r.getSurface())) <= allowedOverlapping;
-	}
-	
-	public double getOverlappngPercentage(BinPackingRectangle r){
+	public double getOverlappingPercentage(Rectangle r){
+		/*
 		int left = Math.max(x, r.x);
 		int right = Math.min(x + this.getWidth(), r.x + r.getWidth());
 		int bottom = Math.max(y, r.y);
@@ -117,23 +113,29 @@ public class BinPackingRectangle  implements Comparable<BinPackingRectangle>{
 		if(left < right && bottom < top){
 			return 0;
 		}
-		
 		return ((right - left) * (top - bottom)) / Math.max(this.getSurface(), r.getSurface());
+		 */
+		HashSet<Point> intersection = new HashSet<Point>(r.getPoints());
+		intersection.retainAll(this.getPoints());
+		return intersection.size() / Math.max(this.getSurface(), r.getSurface());
 	}
 	
 	public void setHorizontal(){
-		this.isHorizontal = true;
+		hasChanged = !isHorizontal;
+		isHorizontal = true;
 	}
 	
 	public void setVertical(){
-		this.isHorizontal = false;
+		hasChanged = isHorizontal;
+		isHorizontal = false;
 	}
 	
 	public boolean isHorizontal(){
-		return this.isHorizontal;
+		return isHorizontal;
 	}
 	
 	void setBox(Box b){
+		hasChanged = box != b;
 		this.box = b;
 	}
 	
@@ -142,7 +144,7 @@ public class BinPackingRectangle  implements Comparable<BinPackingRectangle>{
 	}
 	
 	@Override
-	public int compareTo(BinPackingRectangle o) {
+	public int compareTo(Rectangle o) {
 		if(this.getLongSide() == o.getLongSide()){
 			return o.getShortSide() - this.getShortSide();
 		}
@@ -159,6 +161,7 @@ public class BinPackingRectangle  implements Comparable<BinPackingRectangle>{
 		savedX = x;
 		savedY = y;
 		savedIsHorizontal = isHorizontal;
+		savedPoints = new HashSet<Point>(points);
 	}
 	
 	public void restoreSavedPosition(){
@@ -166,30 +169,34 @@ public class BinPackingRectangle  implements Comparable<BinPackingRectangle>{
 		x = savedX;
 		y = savedY;
 		isHorizontal = savedIsHorizontal;
+		points = new HashSet<Point>(savedPoints);
 	}
 	
-	public boolean isLike(BinPackingRectangle r){
+	public boolean isLike(Rectangle r){
 		return longSide == r.longSide && shortSide == r.shortSide; 
 	}
 	
 	public HashSet<Point> getPoints(){
-		HashSet<Point> result = new HashSet<Point>();
-		int i, j;
-		for(i = x; i < x + getWidth(); i++){
-			for(j = y; j < y + getHeight(); j++){
-				result.add(new Point(i, j));
+		if(hasChanged){
+			points.clear();
+			int i, j;
+			for(i = x; i < x + getWidth(); i++){
+				for(j = y; j < y + getHeight(); j++){
+					points.add(new Point(i, j));
+				}
 			}
 		}
-		return result;
+		return points;
 	}
 	
 	public void removeFromBox(){
 		if(box != null){
 			box.removeRectangle(this);
+			box = null;
 		}
 	}
 	
-	public boolean sameAs(BinPackingRectangle r){
+	public boolean sameAs(Rectangle r){
 		return id == r.id && box.getId() == r.box.getId() && x == r.x && y == r.y && isHorizontal == r.isHorizontal;
 	}
 }

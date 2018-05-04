@@ -3,9 +3,9 @@ package neighborhoods;
 import java.util.Random;
 import java.util.Set;
 
-import binpacking_models.PermutationBinPackingSolution;
-import binpacking_models.PermutationBinPackingSolutionFeature;
-import geometric_models.BinPackingRectangle;
+import binpacking_models.PermutationSolution;
+import binpacking_models.PermutationSolutionFeature;
+import geometric_models.Rectangle;
 import geometric_models.Box;
 
 import java.util.ArrayList;
@@ -35,13 +35,13 @@ public class PermutationNeighborhood implements Neighborhood {
 	
 	
 	private class ConcurrentSolution{
-		private PermutationBinPackingSolution s = null;
+		private PermutationSolution s = null;
 		
-		public synchronized void setSolution(PermutationBinPackingSolution s){
+		public synchronized void setSolution(PermutationSolution s){
 			this.s = s;
 		}
 		
-		public PermutationBinPackingSolution getSolution(){
+		public PermutationSolution getSolution(){
 			return this.s;
 		}
 		
@@ -62,8 +62,8 @@ public class PermutationNeighborhood implements Neighborhood {
 	}
 	
 	@Override
-	public PermutationBinPackingSolution getRandomNeighbor(FeasibleSolution solution) {
-		PermutationBinPackingSolution s = (PermutationBinPackingSolution) solution;
+	public PermutationSolution getRandomNeighbor(FeasibleSolution solution) {
+		PermutationSolution s = (PermutationSolution) solution;
 		Random rand = new Random();
 		int i = rand.nextInt(s.rectangles.size());
 		int j = rand.nextInt(s.rectangles.size() - 1);
@@ -71,7 +71,7 @@ public class PermutationNeighborhood implements Neighborhood {
 			j = s.rectangles.size() - 1;
 		}
 		// Create copies of boxes/rectangles of s
-		ArrayList<BinPackingRectangle> newRectangles = new ArrayList<BinPackingRectangle>();
+		ArrayList<Rectangle> newRectangles = new ArrayList<Rectangle>();
 		ArrayList<Box> newBoxes = new ArrayList<Box>();
 		for(Box b: s.boxes){
 			b = b.deepCopy();
@@ -83,16 +83,16 @@ public class PermutationNeighborhood implements Neighborhood {
 		newRectangles.add(j, newRectangles.remove(i));
 		updateBoxListFromMove(i, j, newBoxes, newRectangles);
 		
-		return (new PermutationBinPackingSolution(newRectangles, newBoxes));
+		return (new PermutationSolution(newRectangles, newBoxes));
 	}
 	
 	@Override
-	public PermutationBinPackingSolution getAugmentingNeighbor(FeasibleSolution solution) {
-		PermutationBinPackingSolution s = (PermutationBinPackingSolution) solution;
+	public PermutationSolution getAugmentingNeighbor(FeasibleSolution solution) {
+		PermutationSolution s = (PermutationSolution) solution;
 		int i, j, k;
 		Box b1, b2;
 		
-		ArrayList<BinPackingRectangle> newRectangles = new ArrayList<BinPackingRectangle>();
+		ArrayList<Rectangle> newRectangles = new ArrayList<Rectangle>();
 		ArrayList<Box> newBoxes = new ArrayList<Box>();
 		Box box;
 		for(Box b: s.boxes){
@@ -102,8 +102,8 @@ public class PermutationNeighborhood implements Neighborhood {
 			box.saveCurrentState();
 		}
 		
-		PermutationBinPackingSolution neighbor;
-		ArrayList<BinPackingRectangle> testPermutation;
+		PermutationSolution neighbor;
+		ArrayList<Rectangle> testPermutation;
 		ArrayList<Box> testBoxes;
 		
 		//ArrayList<Pair<Integer, Integer>> unlikelyAugmentingPositions = new ArrayList<Pair<Integer, Integer>>();
@@ -112,7 +112,7 @@ public class PermutationNeighborhood implements Neighborhood {
 		
 		Box testBox;
 		int code;
-		BinPackingRectangle r1, r2;
+		Rectangle r1, r2;
 		
 		for(i = newRectangles.size() - 1; i > 0; i--){
 			r1 = newRectangles.get(i);
@@ -138,7 +138,7 @@ public class PermutationNeighborhood implements Neighborhood {
 					continue;
 				}
 				
-				testPermutation = new ArrayList<BinPackingRectangle>(newRectangles);
+				testPermutation = new ArrayList<Rectangle>(newRectangles);
 				r1.highlight = true;
 				testPermutation.add(j, testPermutation.remove(i));
 				
@@ -161,19 +161,19 @@ public class PermutationNeighborhood implements Neighborhood {
 					for(; k < testPermutation.size(); k++){
 						if(testPermutation.get(k).getBox() != b1){
 							if(testBox.tryInsertRectangle(testPermutation.get(k), allowedOverlapping)){
-								for(BinPackingRectangle x: testBox.getRectangles()){
+								for(Rectangle x: testBox.getRectangles()){
 									x.restoreSavedPosition();
 								}
 								break;
 							}else{
-								for(BinPackingRectangle x: testBox.getRectangles()){
+								for(Rectangle x: testBox.getRectangles()){
 									x.restoreSavedPosition();
 								}
 								continue jloop;
 							}
 						}else if(!testBox.tryInsertRectangle(testPermutation.get(k), allowedOverlapping)){
 							testPermutation.get(k).restoreSavedPosition();
-							for(BinPackingRectangle x: testBox.getRectangles()){
+							for(Rectangle x: testBox.getRectangles()){
 								x.restoreSavedPosition();
 							}
 							continue jloop;
@@ -185,7 +185,7 @@ public class PermutationNeighborhood implements Neighborhood {
 				updateBoxListFromMove(i, j, testBoxes, testPermutation);
 				
 				if(getBoxListCost(testBoxes) < s.getCost()){
-					neighbor = new PermutationBinPackingSolution(testPermutation, testBoxes);
+					neighbor = new PermutationSolution(testPermutation, testBoxes);
 					
 					return neighbor;
 				}else{
@@ -199,11 +199,11 @@ public class PermutationNeighborhood implements Neighborhood {
 		return null;
 	}
 
-	public int getPermutationHashCode(ArrayList<BinPackingRectangle> permutation){
+	public int getPermutationHashCode(ArrayList<Rectangle> permutation){
 		long start = System.currentTimeMillis();
 		int[] rectangleHash = new int[permutation.size()];
 		int i = 0;
-		for(BinPackingRectangle r: permutation){
+		for(Rectangle r: permutation){
 			rectangleHash[i] = r.getLongSide() * 31 + r.getShortSide();
 			++i;
 		}
@@ -224,7 +224,7 @@ public class PermutationNeighborhood implements Neighborhood {
 		
 		counter++;
 		//System.out.println("============-- TABOO " + counter + " --============");
-		PermutationBinPackingSolution s = (PermutationBinPackingSolution) solution;
+		PermutationSolution s = (PermutationSolution) solution;
 		
 		ConcurrentSolution bestNeighbor = new ConcurrentSolution();
 		int threadCount = 1;
@@ -238,14 +238,14 @@ public class PermutationNeighborhood implements Neighborhood {
 			swapsPerThread.put(i, new ArrayList<Integer>());
 		}
 		
-		PermutationBinPackingSolutionFeature f;
+		PermutationSolutionFeature f;
 		
-		BinPackingRectangle r;
+		Rectangle r;
 		int code;
 		HashSet<Integer> testedSizePermutations = new HashSet<Integer>();
 		
 		for(i = 0; i < rectangleCount - 1; i++){
-			f = new PermutationBinPackingSolutionFeature(s.rectangles.get(i).getId(), i);
+			f = new PermutationSolutionFeature(s.rectangles.get(i).getId(), i);
 			if(
 				!tabooList.contains(f)
 			){
@@ -291,13 +291,13 @@ public class PermutationNeighborhood implements Neighborhood {
 					long start = System.currentTimeMillis();
 					threadStartTimes[tid] = start;
 					
-					PermutationBinPackingSolution neighbor;
-					ArrayList<BinPackingRectangle> permutation; 
+					PermutationSolution neighbor;
+					ArrayList<Rectangle> permutation; 
 					for(Integer pair : swapsPerThread.get(tid)){
 						permutation = new ArrayList<>(s.rectangles);
 						permutation.add(permutation.remove(pair.intValue()));
 						
-						neighbor = new PermutationBinPackingSolution(permutation, boxLength);
+						neighbor = new PermutationSolution(permutation, boxLength);
 						
 						start = System.currentTimeMillis();
 						synchronized(bestNeighbor){		
@@ -352,8 +352,8 @@ public class PermutationNeighborhood implements Neighborhood {
 		else return s;
 	}
 	
-	public void updateBoxListFromMove(int i, int j, ArrayList<Box> boxes, ArrayList<BinPackingRectangle> permutation){
-		BinPackingRectangle r = permutation.get(j);
+	public void updateBoxListFromMove(int i, int j, ArrayList<Box> boxes, ArrayList<Rectangle> permutation){
+		Rectangle r = permutation.get(j);
 		Box b1 = r.getBox();
 		Box b2 = permutation.get(j < i ? j + 1 : j - 1).getBox();
 		int bi1 = boxes.indexOf(b1);

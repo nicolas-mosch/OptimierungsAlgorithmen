@@ -2,6 +2,7 @@ package geometric_models;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Random;
 
 /**
@@ -12,22 +13,40 @@ import java.util.Random;
  * @author Nicolas
  *
  */
+
+
+//TODO: Make Box subclasses for each type of insertion (inorder with priorityQueue, not in-order) 							??
+//TODO: Dont use save/restore state. Just copy instead box instead when necessary. Or handle unused stored data better.		??
+//TODO: Get rid of totalOverlap. Keep track of it with int occurrences = Collections.frequency(animals, "bat");				??
+
+
 public class Box implements Comparable<Box>{
-	private int length;
-	private ArrayList<BinPackingRectangle> rectangles;
-	private final int id;
-	private ArrayList<BinPackingRectangle> storedRectangles; 
-	private boolean hasChanged;
-	private double cost;
+	private final int id, length;
+	private double cost, storedCost;
+	private boolean hasChanged, storedHasChanged;
+	private ArrayList<Rectangle> rectangles, storedRectangles;
+	private double totalOverlap;
+	private HashSet<Point> freePoints, storedFreePoints;
+	private ArrayList<Point> occupiedPoints, storedOccupiedPoints;
+	
 	/**
 	 * @param length
 	 */
 	public Box(int id, int length) {
 		this.length = length;
-		rectangles = new ArrayList<BinPackingRectangle>();
+		rectangles = new ArrayList<Rectangle>();
 		this.id = id; 
 		hasChanged = false;
 		cost = 0;
+		totalOverlap = 0;
+		int i, j;
+		freePoints = new HashSet<Point>();
+		occupiedPoints = new ArrayList<Point>();
+		for(i = 0; i < length; i++){
+			for(j = 0; j < length; j++){
+				freePoints.add(new Point(i, j));
+			}
+		}
 	}
 
 	public int getLength() {
@@ -35,12 +54,8 @@ public class Box implements Comparable<Box>{
 	}
 
 	public int getFreeSurface() {
-		int freeSurface = length * length;
-		for(BinPackingRectangle r: rectangles){
-			freeSurface -= r.getSurface();
-		}
-		return freeSurface;
-	} 
+		return freePoints.size();
+	}
  
 	
 	public int getOccupiedSurface() {
@@ -53,12 +68,26 @@ public class Box implements Comparable<Box>{
 	 * @param n
 	 * @return boolean whether or not the rectangle was inserted
 	 */
-	public boolean tryInsertRectangle(BinPackingRectangle n, float allowedOverlapping){
+	public void insertRectangle(Rectangle n){
+		rectangles.add(n);
+		HashSet<Point> rectanglePoints = n.getPoints();
+		freePoints.removeAll(rectanglePoints);
+		occupiedPoints.addAll(rectanglePoints);
+		hasChanged = true;
+	}
+	
+	/** Try to insert a rectangle in first position where it fits
+	 *  Attempt is performed from bottom left corner to top right.
+	 *  First horizontally, then vertically
+	 * @param n
+	 * @return boolean whether or not the rectangle was inserted
+	 */
+	public boolean tryInsertRectangle(Rectangle n, float allowedOverlapping){
 		if(getFreeSurface() < n.getSurface())
 			return false;
 		int row, col;
 		n.saveCurrentPosition();
-		
+		double totalOverlappingAtPosition, overlapWithRectangle;
 		
 		// Try to place vertically
 		n.setVertical();
@@ -67,15 +96,21 @@ public class Box implements Comparable<Box>{
 			columnloop:
 			do{
 				n.setPosition(col, row);
-				for(BinPackingRectangle r: rectangles){
-					if(n.overlaps(r, allowedOverlapping)){
+				totalOverlappingAtPosition = 0;
+				for(Rectangle r: rectangles){
+					overlapWithRectangle = n.getOverlappingPercentage(r);
+					if(overlapWithRectangle > allowedOverlapping){
 						col = r.getX() + r.getWidth();
 						continue columnloop;
 					}
+					totalOverlappingAtPosition += overlapWithRectangle;
 				}
 				n.setBox(this);
 				rectangles.add(n);
 				hasChanged = true;
+				totalOverlap += totalOverlappingAtPosition;
+				occupiedPoints.addAll(n.getPoints());
+				freePoints.removeAll(n.getPoints());
 				return true;
 			}while(col <= length - n.getShortSide());
 		}
@@ -88,15 +123,21 @@ public class Box implements Comparable<Box>{
 				columnloop:
 				do{
 					n.setPosition(col, row);
-					for(BinPackingRectangle r: rectangles){
-						if(n.overlaps(r, allowedOverlapping)){
+					totalOverlappingAtPosition = 0;
+					for(Rectangle r: rectangles){
+						overlapWithRectangle = n.getOverlappingPercentage(r);
+						if(overlapWithRectangle > allowedOverlapping){
 							col = r.getX() + r.getWidth();
 							continue columnloop;
 						}
+						totalOverlappingAtPosition += overlapWithRectangle;
 					}
 					n.setBox(this);
 					rectangles.add(n);
 					hasChanged = true;
+					totalOverlap += totalOverlappingAtPosition;
+					occupiedPoints.addAll(n.getPoints());
+					freePoints.removeAll(n.getPoints());
 					return true;
 				}while(col <= length - n.getLongSide());
 			}
@@ -112,18 +153,29 @@ public class Box implements Comparable<Box>{
 	 * @param allowedOverlapping the percentage of allowed overlapping
 	 * @return whether the rectangle was inserted or not
 	 */
-	public boolean tryInsertRectangleBySize(BinPackingRectangle n, float allowedOverlapping){
-		if(getFreeSurface() < n.getSurface()){
+	public boolean tryInsertRectangleBySize(Rectangle n, float allowedOverlapping){
+		if(getFreeSurface() < (n.getSurface() - (n.getSurface() * allowedOverlapping) / 100 )){
 			return false;
 		}
-		BinPackingRectangle c;
+		Rectangle c;
 		int i, j;
 		int row, col;
-		rectangles.add(n);
-		Collections.sort(rectangles);
+		double totalOverlapAtPosition = 0, overlapWithRectangle;
 		
+		Collections.sort(rectangles); //TODO: probably not always necessary
+		
+		this.saveCurrentState();
+		
+		i = rectangles.size();
+		while(rectangles.get(i - 1).compareTo(n) <= 0){
+			--i;
+			
+		}
+		rectangles.add(i, n);
+		
+		// Insert n Re-Insert rectangles larger than n in order by size
 		outerloop:
-		for(i = 0; i < rectangles.size(); i++){
+		for(; i < rectangles.size(); i++){
 			c = rectangles.get(i);
 			c.saveCurrentPosition();
 			
@@ -134,11 +186,15 @@ public class Box implements Comparable<Box>{
 				columnloop:
 				do{
 					c.setPosition(col, row);
+					totalOverlapAtPosition = 0;
+					// Compare to rectangles inserted previously (i.e. which are larger in area)
 					for(j = 0; j < i; j++){
-						if(c.overlaps(rectangles.get(j), allowedOverlapping)){
+						overlapWithRectangle = c.getOverlappingPercentage(rectangles.get(j));
+						if(overlapWithRectangle > allowedOverlapping){
 							col = rectangles.get(j).getX() + rectangles.get(j).getWidth();
 							continue columnloop;
 						}
+						totalOverlapAtPosition += overlapWithRectangle; 
 					}
 					continue outerloop;
 				}while(col <= length - c.getShortSide());
@@ -152,11 +208,14 @@ public class Box implements Comparable<Box>{
 					columnloop:
 					do{
 						c.setPosition(col, row);
+						totalOverlapAtPosition = 0;
 						for(j = 0; j < i; j++){
-							if(c.overlaps(rectangles.get(j), allowedOverlapping)){
+							overlapWithRectangle = c.getOverlappingPercentage(rectangles.get(j));
+							if(overlapWithRectangle > allowedOverlapping){
 								col = rectangles.get(j).getX() + rectangles.get(j).getWidth();
 								continue columnloop;
 							}
+							totalOverlapAtPosition += overlapWithRectangle; 
 						}
 						continue outerloop;
 					}while(col <= length - c.getLongSide());
@@ -170,32 +229,8 @@ public class Box implements Comparable<Box>{
 			rectangles.remove(n);
 			return false;
 		}
+		totalOverlap += totalOverlapAtPosition;
 		n.setBox(this);
-		hasChanged = true;
-		return true;
-	}
-	
-	/** Attempts to insert the rectangle at some random position in the box
-	 * @param n
-	 * @param allowedOverlapping
-	 * @return
-	 */
-	public boolean insertRectangleAtRandom(BinPackingRectangle n, float allowedOverlapping){
-		Random rand = new Random();
-		if(rand.nextBoolean()){
-			n.setHorizontal();
-		}else{
-			n.setVertical();
-		}
-		
-		n.setPosition(rand.nextInt(length - n.getWidth()), rand.nextInt(length - n.getHeight()));
-		for(BinPackingRectangle r: rectangles){
-			if(n.overlaps(r, allowedOverlapping)){
-				return false;
-			}
-		}
-		rectangles.add(n);
-		n.setBox(this); 
 		hasChanged = true;
 		return true;
 	}
@@ -204,8 +239,12 @@ public class Box implements Comparable<Box>{
 	 * @param r
 	 * @return
 	 */
-	public boolean removeRectangle(BinPackingRectangle r){
-		if(rectangles.remove(r)){ 
+	public boolean removeRectangle(Rectangle r){
+		if(rectangles.remove(r)){
+			for(Rectangle s: rectangles){
+				totalOverlap -= r.getOverlappingPercentage(s);
+			}
+			
 			hasChanged = true;
 			return true;
 		}
@@ -216,7 +255,7 @@ public class Box implements Comparable<Box>{
 	 * @param r
 	 * @return
 	 */
-	public boolean removeRectanglesInsertedFrom(BinPackingRectangle r){
+	public boolean removeRectanglesInsertedFrom(Rectangle r){
 		if(!rectangles.contains(r))
 			return false;
 		while(r != rectangles.remove(rectangles.size() - 1));
@@ -229,7 +268,7 @@ public class Box implements Comparable<Box>{
 		return id;
 	}
 
-	public ArrayList<BinPackingRectangle> getRectangles() {
+	public ArrayList<Rectangle> getRectangles() {
 		return rectangles;
 	}
 	
@@ -252,7 +291,7 @@ public class Box implements Comparable<Box>{
 		String emptySlot = "";
 		
 		int[][] newArea = new int[length][length];
-		for(BinPackingRectangle r: rectangles){
+		for(Rectangle r: rectangles){
 			sum+= r + " | ";
 			
 			for(int row = r.getY(); row < r.getY() + r.getHeight(); row++){
@@ -295,9 +334,9 @@ public class Box implements Comparable<Box>{
 	
 	public Box deepCopy(){
 		Box res = new Box(id, length);
-		BinPackingRectangle rcopy;
-		for(BinPackingRectangle r : rectangles){
-			rcopy = new BinPackingRectangle(r);
+		Rectangle rcopy;
+		for(Rectangle r : rectangles){
+			rcopy = new Rectangle(r);
 			rcopy.setBox(res);
 			res.rectangles.add(rcopy);
 		}
@@ -312,11 +351,11 @@ public class Box implements Comparable<Box>{
 		return res;
 	}
 	
-	public boolean contains(BinPackingRectangle r){
+	public boolean contains(Rectangle r){
 		return rectangles.contains(r);
 	}
 	
-	public BinPackingRectangle getFirstInsertedRectangle(){
+	public Rectangle getFirstInsertedRectangle(){
 		return rectangles.get(0);
 	}
 	
@@ -325,21 +364,29 @@ public class Box implements Comparable<Box>{
 	}
 	
 	public void saveCurrentState(){
-		storedRectangles = new ArrayList<BinPackingRectangle>(rectangles);
-		for(BinPackingRectangle r: storedRectangles){
+		storedRectangles = new ArrayList<Rectangle>(rectangles);
+		storedFreePoints = new HashSet<Point>(freePoints);
+		storedOccupiedPoints = new ArrayList<Point>(occupiedPoints);
+		storedHasChanged = hasChanged;
+		for(Rectangle r: storedRectangles){
 			r.saveCurrentPosition();
 		}
+		storedCost = cost;
 	}
 	
 	public void restoreSavedState(){
-		rectangles = new ArrayList<BinPackingRectangle>(storedRectangles);
-		for(BinPackingRectangle r: rectangles){
+		rectangles = new ArrayList<Rectangle>(storedRectangles);
+		freePoints = new HashSet<Point>(storedFreePoints);
+		occupiedPoints = new ArrayList<Point>(storedOccupiedPoints);
+		cost = storedCost;
+		hasChanged = storedHasChanged;
+		for(Rectangle r: rectangles){
 			r.restoreSavedPosition();
 		}
 	}
 
 	public boolean isLike(Box box) {
-		BinPackingRectangle r;
+		Rectangle r;
 		for(int i = 0; i < rectangles.size(); i++){
 			r = rectangles.get(i);
 			if(!r.sameAs(box.rectangles.get(i))){
@@ -351,6 +398,7 @@ public class Box implements Comparable<Box>{
 	
 	public double getCost(){
 		if(hasChanged){
+			//TODO: consider overlapping
 			cost = Math.pow(this.getOccupiedSurface(), 2) / Math.pow(length, 5);
 			hasChanged = false;
 		}

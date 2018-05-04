@@ -1,13 +1,13 @@
 package binpacking_models;
 
-import geometric_models.BinPackingRectangle;
+import geometric_models.Rectangle;
 import interfaces.Feature;
 
-public class GeometricBinPackingSolutionFeature extends Feature{
+public class GeometricSolutionFeature extends Feature{
 	public final int rectangleId;
 	public final int boxId;
 	
-	public GeometricBinPackingSolutionFeature(BinPackingRectangle r){
+	public GeometricSolutionFeature(Rectangle r){
 		rectangleId = r.getId();
 		boxId = r.getBox().getId();
 	}
@@ -18,7 +18,7 @@ public class GeometricBinPackingSolutionFeature extends Feature{
 			return true;
         if (other == null || getClass() != other.getClass()) 
         	return false;
-        GeometricBinPackingSolutionFeature o = (GeometricBinPackingSolutionFeature) other;
+        GeometricSolutionFeature o = (GeometricSolutionFeature) other;
         
 		return rectangleId == o.rectangleId 
 			&& boxId == o.boxId; 

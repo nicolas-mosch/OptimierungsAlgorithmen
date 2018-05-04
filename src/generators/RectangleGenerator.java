@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
 
-import geometric_models.BinPackingRectangle;
+import geometric_models.Rectangle;
 
 public class RectangleGenerator {
 	
@@ -14,7 +14,7 @@ public class RectangleGenerator {
 		random = new Random();
 	}
 	
-	public BinPackingRectangle[] generateRandomly(
+	public Rectangle[] generateRandomly(
 		int rectangleCount,
 		int minSideLength,
 		int maxSideLength
@@ -31,12 +31,12 @@ public class RectangleGenerator {
 			);
 		}
 		
-		BinPackingRectangle[] rectangles = new BinPackingRectangle[rectangleCount];
+		Rectangle[] rectangles = new Rectangle[rectangleCount];
 		int diff = maxSideLength - minSideLength;
 		
 		for(int i = 0; i < rectangleCount; i++){
 			rectangles[i] = 
-				new BinPackingRectangle(
+				new Rectangle(
 					i + 1,
 					random.nextInt(diff) + minSideLength,
 					random.nextInt(diff) + minSideLength
@@ -49,7 +49,7 @@ public class RectangleGenerator {
 	
 	
 	// TODO: cannot split minimum-sized rectangles
-	public BinPackingRectangle[] generateFromSquare(
+	public Rectangle[] generateFromSquare(
 		int rectangleCount,
 		int squareSideLength
 	){
@@ -60,13 +60,13 @@ public class RectangleGenerator {
 			throw new IllegalArgumentException("The square side-length must be positive");
 		}
 		
-		ArrayList<BinPackingRectangle> divisibleRectangles = new ArrayList<BinPackingRectangle>();
-		ArrayList<BinPackingRectangle> nonDivisibleRectangles = new ArrayList<BinPackingRectangle>();
+		ArrayList<Rectangle> divisibleRectangles = new ArrayList<Rectangle>();
+		ArrayList<Rectangle> nonDivisibleRectangles = new ArrayList<Rectangle>();
 		
-		divisibleRectangles.add(new BinPackingRectangle(1, squareSideLength, squareSideLength));
+		divisibleRectangles.add(new Rectangle(1, squareSideLength, squareSideLength));
 		
 		int i, split;
-		BinPackingRectangle oldRect, newRect1, newRect2;
+		Rectangle oldRect, newRect1, newRect2;
 		while(divisibleRectangles.size() + nonDivisibleRectangles.size() < rectangleCount && !divisibleRectangles.isEmpty()){
 			i = random.nextInt(divisibleRectangles.size());
 			oldRect = divisibleRectangles.remove(i);
@@ -78,9 +78,9 @@ public class RectangleGenerator {
 			){	// split on short side
 				split = random.nextInt(oldRect.getShortSide() - 1) + 1;
 				
-				newRect1 = new BinPackingRectangle(oldRect.getId(), split, oldRect.getLongSide());
+				newRect1 = new Rectangle(oldRect.getId(), split, oldRect.getLongSide());
 				
-				newRect2 = new BinPackingRectangle(
+				newRect2 = new Rectangle(
 					divisibleRectangles.size() + nonDivisibleRectangles.size() + 1,
 					oldRect.getShortSide() - split,
 					oldRect.getLongSide()
@@ -88,9 +88,9 @@ public class RectangleGenerator {
 			}else{ // split on long side
 				split = random.nextInt(oldRect.getLongSide() - 1) + 1;
 				
-				newRect1 = new BinPackingRectangle(oldRect.getId(), oldRect.getShortSide(), split);
+				newRect1 = new Rectangle(oldRect.getId(), oldRect.getShortSide(), split);
 				
-				newRect2 = new BinPackingRectangle(
+				newRect2 = new Rectangle(
 					divisibleRectangles.size() + nonDivisibleRectangles.size() + 1,
 					oldRect.getShortSide(),
 					oldRect.getLongSide() - split
@@ -114,6 +114,6 @@ public class RectangleGenerator {
 		
 		divisibleRectangles.addAll(nonDivisibleRectangles);
 		
-		return divisibleRectangles.toArray(new BinPackingRectangle[divisibleRectangles.size()]);
+		return divisibleRectangles.toArray(new Rectangle[divisibleRectangles.size()]);
 	}
 }
